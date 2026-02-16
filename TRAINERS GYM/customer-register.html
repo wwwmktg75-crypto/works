@@ -607,11 +607,17 @@
               
               if (result && result.success) {
                 alert('顧客データを登録しました');
-                
-                // 登録成功時に顧客一覧ページに遷移（sessionId付き）
+                // 登録成功時に顧客一覧へ遷移（必ず getWebAppUrl で絶対URLを取得してリンク切れを防ぐ）
                 const sid = currentSession ? currentSession.sessionId : '';
-                const listUrl = (baseUrl || '') + '?page=customer-list' + (sid ? '&sessionId=' + encodeURIComponent(sid) : '');
-                window.top.location.href = listUrl;
+                const q = '?page=customer-list' + (sid ? '&sessionId=' + encodeURIComponent(sid) : '');
+                const go = function(url) {
+                  window.top.location.href = (url || '').replace(/\?.*$/, '') + q;
+                };
+                if (baseUrl) {
+                  go(baseUrl);
+                } else {
+                  google.script.run.withSuccessHandler(go).withFailureHandler(function() { go(window.location.origin + window.location.pathname); }).getWebAppUrl();
+                }
               } else {
                 const errorMsg = result && result.message ? result.message : '登録に失敗しました';
                 alert('エラー: ' + errorMsg);

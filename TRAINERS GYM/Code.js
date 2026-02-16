@@ -1,13 +1,16 @@
 /**
- * 経営管理ダッシュボードシステム★AI-chan作業中 2025/01/18 (日) 更新★
- * 顧客一覧の店舗フィルタを部分一致に（駒沢⇔駒沢大学など）
- * Google Apps Script バックエンド
- * パフォーマンス最適化: キャッシュサービス、バッチ処理、範囲指定最適化を実装
- * 報酬計算機能追加: 旧制度（歩合率）・新制度（段階別セッション）対応
+ * 経営管理ダッシュボードシステム★AI-chan作業中 2025/02/18 (火) 16:00 更新★
+ * ※ clasp push 前に上記の更新日時を必ず現在日時に書き換えること
  */
 
 // ダッシュボード用スプレッドシートID
-const SPREADSHEET_ID = '1fG_fXkXqY7lQlUyfk4e-ilExr_s0y0cmGvE--TQSmjg';
+// 別プロジェクト用: GASエディタで「プロジェクトの設定」→「スクリプト プロパティ」に
+// SPREADSHEET_ID = (新しいスプレッドシートのID) を追加すると、ここを編集せずに切り替え可能
+function getSpreadsheetId() {
+  const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (id && id.trim()) return id.trim();
+  return '1fG_fXkXqY7lQlUyfk4e-ilExr_s0y0cmGvE--TQSmjg'; // デフォルト（未設定時）
+}
 
 // ユーザー管理用スプレッドシートID（ユーザー情報を保存するシート）
 const USER_SHEET_NAME = 'ユーザー管理';
@@ -29,7 +32,7 @@ const PERFORMANCE_REPORT_SHEET_NAME = '実績報告';
  */
 function getSheetNames() {
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheets = ss.getSheets();
     return sheets.map(s => s.getName());
   } catch (e) {
@@ -176,6 +179,8 @@ function doGet(e) {
       const rdTemplate = HtmlService.createTemplateFromFile('report-detail');
       rdTemplate.deployUrl = baseUrl;
       rdTemplate.reportId = params.id || '';
+      rdTemplate.reporter = params.reporter || '';
+      rdTemplate.reportDateTime = params.reportDateTime || params.timestamp || '';
       rdTemplate.sessionId = params.sessionId || '';
       return rdTemplate
         .evaluate()
@@ -278,6 +283,21 @@ function doGet(e) {
         return template
           .evaluate()
           .setTitle('スタッフ別実績報告詳細')
+          .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+      } else if (page === 'report-list') {
+        // 実績報告一覧（FCオーナー＝全件、オーナー＝自店舗のみ、スタッフは閲覧不可）
+        if (session.role === 'スタッフ') {
+          const template = HtmlService.createTemplateFromFile('index');
+          template.deployUrl = baseUrl;
+          return template.evaluate()
+            .setTitle('トレーナーズジム　経営管理ダッシュボード')
+            .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        }
+        const template = HtmlService.createTemplateFromFile('report-list');
+        template.deployUrl = baseUrl;
+        return template
+          .evaluate()
+          .setTitle('実績報告一覧')
           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
       } else if (page === 'reward') {
         // 報酬管理ページ（スタッフには非表示）
@@ -478,7 +498,7 @@ function getStoreYearlyTrend(storeName, sessionId = null) {
   if (!canAccessStore(storeName)) {
     return {};
   }
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   const sheet = ss.getSheetByName('報告データシート履歴');
   if (!sheet) return {};
   const data = sheet.getDataRange().getValues();
@@ -524,7 +544,7 @@ function getMonthlyDetails(storeName, targetMonth, sessionId = null) {
     return { error: 'この店舗へのアクセス権限がありません', summary: {}, salesDetails: [], inquiryStatus: [] };
   }
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報告データシート履歴');
     if (!sheet) return { error: '報告データシート履歴が見つかりません', summary: {}, salesDetails: [], inquiryStatus: [] };
     const data = sheet.getDataRange().getValues();
@@ -683,7 +703,7 @@ function getStaffPerformanceTable(storeName, targetMonth, sessionId = null) {
     return { error: 'この店舗へのアクセス権限がありません', total: {}, staffData: {}, staffList: [] };
   }
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報告データシート履歴');
     if (!sheet) return { error: '報告データシート履歴が見つかりません', total: {}, staffData: {}, staffList: [] };
     const data = sheet.getDataRange().getValues();
@@ -863,7 +883,7 @@ function getStoreLast3MonthsTrend(storeName, sessionId = null) {
     return { months: [], values: [] };
   }
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報告データシート履歴');
     if (!sheet) return { months: [], values: [] };
     const data = sheet.getDataRange().getValues();
@@ -964,7 +984,7 @@ function getAllStoresSummary(sessionId = null) {
     
     let ss;
     try {
-      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+      ss = SpreadsheetApp.openById(getSpreadsheetId());
     } catch (ssError) {
       console.error('スプレッドシート接続エラー:', ssError);
       return { 
@@ -1192,9 +1212,17 @@ function getAllStoresSummary(sessionId = null) {
       totalAll.customerCount += summary.customerCount;
     });
     
-    // 店舗リストをソート
-    const storeList = Array.from(allStores).sort();
-    
+    // 店舗リストを表示順でソート（上段: 駒沢・高円寺・江古田、下段: 曙橋・西荻窪・幡ヶ谷）
+    const DASHBOARD_STORE_ORDER = ['駒沢', '高円寺', '江古田', '曙橋', '西荻窪', '幡ヶ谷'];
+    const storeList = Array.from(allStores).sort((a, b) => {
+      const ia = DASHBOARD_STORE_ORDER.indexOf(a);
+      const ib = DASHBOARD_STORE_ORDER.indexOf(b);
+      if (ia >= 0 && ib >= 0) return ia - ib;
+      if (ia >= 0) return -1;
+      if (ib >= 0) return 1;
+      return a.localeCompare(b);
+    });
+
     // 各店舗のサマリを配列に変換
     const storeSummaries = storeList.map(store => ({
       storeName: store,
@@ -1285,7 +1313,7 @@ function getAllStaffSummary(storeName = '', targetMonth = '', sessionId = null) 
     // この場合は、storeNameを空のままにして、後でフィルタリング
   }
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報告データシート履歴');
     if (!sheet) return { error: "報告データシート履歴が見つかりません", total: {}, staffData: {}, staffList: [] };
     const data = sheet.getDataRange().getValues();
@@ -1532,7 +1560,7 @@ function getStaffDetailReport(staffName, storeName = '', targetMonth = '', sessi
       return { error: 'この店舗へのアクセス権限がありません', staffName: staffName, records: [], summary: {} };
     }
     
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報告データシート履歴');
     
     if (!sheet) {
@@ -1732,7 +1760,7 @@ function getStaffDetailReport(staffName, storeName = '', targetMonth = '', sessi
  */
 function createUserSheetManually() {
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     let userSheet = ss.getSheetByName(USER_SHEET_NAME);
     
     if (userSheet) {
@@ -1887,7 +1915,7 @@ function addDummyStaffAccounts() {
  * @return {Sheet} ユーザー管理シート
  */
 function getUserSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let userSheet = ss.getSheetByName(USER_SHEET_NAME);
   
   if (!userSheet) {
@@ -1971,7 +1999,7 @@ function login(loginId, password) {
     }
     
     // スタッフマスタシートを取得
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName(STAFF_MASTER_SHEET_NAME);
     if (!sheet) {
       return {
@@ -2275,7 +2303,7 @@ function getStoreListInternal() {
   // キャッシュを活用（1時間キャッシュ）
   return getCachedData('store_list', function() {
     try {
-      const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+      const ss = SpreadsheetApp.openById(getSpreadsheetId());
       const storeSet = new Set();
       
       // 1. 報告データシート履歴から店舗名を取得
@@ -2346,7 +2374,7 @@ function getStoreListInternal() {
  * @return {Sheet} スタッフマスタシート
  */
 function getStaffMasterSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let sheet = ss.getSheetByName(STAFF_MASTER_SHEET_NAME);
   
   if (!sheet) {
@@ -2377,7 +2405,7 @@ function getCourseList(sessionId = null) {
   }
   
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('コースマスタ');
     
     if (!sheet) {
@@ -2494,7 +2522,7 @@ function getStaffByStore(storeName, sessionId = null) {
  * @return {Sheet} 実績報告シート
  */
 function getPerformanceReportSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let sheet = ss.getSheetByName(PERFORMANCE_REPORT_SHEET_NAME);
   
   if (!sheet) {
@@ -2542,7 +2570,7 @@ function getPerformanceReportSheet() {
  * @return {Sheet} 売上顧客シート
  */
 function getSalesCustomerSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let sheet = ss.getSheetByName('売上顧客');
   
   if (!sheet) {
@@ -2567,7 +2595,7 @@ function getSalesCustomerSheet() {
  * SNS・記事投稿シートを取得（なければ作成）
  */
 function getSnsPostSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let sheet = ss.getSheetByName('SNS投稿');
   
   if (!sheet) {
@@ -2697,7 +2725,7 @@ function getCustomersByStore(storeName, yearMonth, sessionId = null) {
   }
   
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     
     // 年月を正規化（例: "2025年1月" -> {year: 2025, month: 1}）
     let targetYear, targetMonth;
@@ -2929,7 +2957,7 @@ function debugSheetStructure(sessionId) {
   const user = getCurrentUser();
   if (!user) return { error: 'ログインが必要です' };
 
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   const result = { staffName: user.staffName, userId: user.userId };
 
   // 顧客登録シート
@@ -3014,7 +3042,7 @@ function getStaffCustomersByStore(storeName, yearMonth, sessionId = null) {
   }
   
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const customers = [];
     
     // 年月を正規化（例: "2025年1月" -> {year: 2025, month: 1}）
@@ -3655,6 +3683,171 @@ function getStaffPerformanceReports(sessionId = null) {
 }
 
 /**
+ * 実績報告一覧を取得（FCオーナー＝全件、オーナー＝自店舗のみ、スタッフ＝閲覧不可）
+ * @param {string} sessionId - セッションID（オプション）
+ * @return {{ error?: string, reports: Array }} エラー時は error、成功時は reports 配列
+ */
+function getPerformanceReportListForOwner(sessionId = null) {
+  if (sessionId) {
+    try {
+      setSession(sessionId);
+    } catch (error) {
+      console.error('セッション設定エラー:', error);
+    }
+  }
+
+  const user = getCurrentUser();
+  if (!user) {
+    return { error: 'ログインが必要です', reports: [] };
+  }
+
+  // スタッフは閲覧不可
+  if (user.role === 'スタッフ') {
+    return { error: 'このページを閲覧する権限がありません', reports: [] };
+  }
+
+  try {
+    const reportSheet = getPerformanceReportSheet();
+    const lastRow = reportSheet.getLastRow();
+    const lastCol = reportSheet.getLastColumn();
+    if (lastRow === 0 || lastCol === 0 || lastRow <= 1) {
+      return { reports: [] };
+    }
+
+    const reportData = reportSheet.getRange(1, 1, lastRow, lastCol).getValues();
+    if (!reportData || reportData.length <= 1) {
+      return { reports: [] };
+    }
+
+    const headers = reportData[0];
+    const idIdx = headers.indexOf('ID');
+    const yearMonthIdx = headers.indexOf('報告年月');
+    const staffNameIdx = headers.indexOf('スタッフ名');
+    const storeNameIdx = headers.indexOf('所属店舗');
+    const reportDateTimeIdx = headers.indexOf('報告日時');
+    if (staffNameIdx < 0) {
+      return { reports: [] };
+    }
+
+    // FCオーナー（経営オーナー）は全店舗、オーナーはアクセス可能店舗のみ
+    const allowedStores = getAccessibleStores();
+    const isAllStores = user.role === '経営オーナー';
+
+    const reports = [];
+    for (let i = 1; i < reportData.length; i++) {
+      const row = reportData[i];
+      const rowStore = storeNameIdx >= 0 ? String(row[storeNameIdx] || '').trim() : '';
+      if (!isAllStores && allowedStores.length > 0 && !allowedStores.includes(rowStore)) {
+        continue;
+      }
+      const rowId = idIdx >= 0 && row[idIdx] ? String(row[idIdx]).trim() : '';
+      const reportId = rowId || String(i - 1);
+      reports.push({
+        id: reportId,
+        yearMonth: yearMonthIdx >= 0 ? String(row[yearMonthIdx] || '').trim() : '',
+        staffName: String(row[staffNameIdx] || '').trim(),
+        storeName: rowStore,
+        reportDateTime: reportDateTimeIdx >= 0 ? String(row[reportDateTimeIdx] || '').trim() : ''
+      });
+    }
+
+    reports.sort((a, b) => {
+      if (!a.reportDateTime) return 1;
+      if (!b.reportDateTime) return -1;
+      return b.reportDateTime.localeCompare(a.reportDateTime);
+    });
+
+    return { reports: reports };
+  } catch (error) {
+    console.error('getPerformanceReportListForOwner error:', error);
+    return { error: '一覧の取得に失敗しました: ' + error.toString(), reports: [] };
+  }
+}
+
+/**
+ * 報告日時を比較用に正規化（Dateは文字列に、文字列はトリム）
+ * @param {*} val - 報告日時（Dateまたは文字列）
+ * @return {string}
+ */
+function normalizeReportDateTime(val) {
+  if (val === null || val === undefined) return '';
+  if (Object.prototype.toString.call(val) === '[object Date]' && !isNaN(val.getTime())) {
+    return Utilities.formatDate(val, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
+  }
+  return String(val).trim().replace(/\s+/g, ' ');
+}
+
+/**
+ * 報告者（スタッフ名）と報告日時でスプレッドシートから実績報告を検索し、詳細を返す
+ * 詳細ページを「報告者＋タイムスタンプ」で動的に開くために使用
+ * @param {string} reporter - 報告者（スタッフ名）
+ * @param {string} reportDateTime - 報告日時（例: "2025-01-18 10:30:00"）
+ * @param {string} sessionId - セッションID（オプション）
+ * @return {Object} getPerformanceReportById と同じ形式（success, message, data）
+ */
+function getPerformanceReportByReporterAndTimestamp(reporter, reportDateTime, sessionId = null) {
+  if (sessionId) {
+    try {
+      setSession(sessionId);
+    } catch (error) {
+      console.error('セッション設定エラー:', error);
+    }
+  }
+
+  const reporterTrim = String(reporter || '').trim();
+  const dateTimeTrim = String(reportDateTime || '').trim().replace(/\s+/g, ' ');
+  if (!reporterTrim || !dateTimeTrim) {
+    return { success: false, message: '報告者と報告日時を指定してください' };
+  }
+
+  try {
+    const reportSheet = getPerformanceReportSheet();
+    const lastRow = reportSheet.getLastRow();
+    const lastCol = reportSheet.getLastColumn();
+    if (lastRow < 2 || lastCol < 1) {
+      return { success: false, message: '実績報告が見つかりません' };
+    }
+
+    const reportData = reportSheet.getRange(1, 1, lastRow, lastCol).getValues();
+    const headers = reportData[0];
+    const idIdx = headers.indexOf('ID');
+    const staffNameIdx = headers.indexOf('スタッフ名');
+    const reportDateTimeIdx = headers.indexOf('報告日時');
+    if (staffNameIdx < 0 || reportDateTimeIdx < 0) {
+      return { success: false, message: '実績報告シートの形式が不正です' };
+    }
+
+    const reporterVariants = [
+      reporterTrim,
+      reporterTrim.replace(/　/g, ' ').trim(),
+      reporterTrim.replace(/ /g, '　').trim()
+    ];
+    const targetNorm = dateTimeTrim;
+
+    for (let i = 1; i < reportData.length; i++) {
+      const row = reportData[i];
+      const rowStaff = String(row[staffNameIdx] || '').trim();
+      const rowDt = normalizeReportDateTime(row[reportDateTimeIdx]);
+
+      const nameMatch = reporterVariants.some(function(v) {
+        const vTrim = v.trim();
+        return rowStaff === vTrim || rowStaff.includes(vTrim) || vTrim.includes(rowStaff);
+      });
+      if (!nameMatch) continue;
+      if (rowDt !== targetNorm) continue;
+
+      const reportId = idIdx >= 0 && row[idIdx] ? String(row[idIdx]).trim() : String(i - 1);
+      return getPerformanceReportById(reportId, sessionId);
+    }
+
+    return { success: false, message: '指定の報告者・報告日時と一致する実績報告が見つかりません' };
+  } catch (error) {
+    console.error('getPerformanceReportByReporterAndTimestamp error:', error);
+    return { success: false, message: '実績報告の取得に失敗しました: ' + error.toString() };
+  }
+}
+
+/**
  * 実績報告の詳細を取得（IDで指定）
  * @param {string} reportId - 実績報告のID（UUID）または行番号（後方互換性のため）
  * @param {string} sessionId - セッションID（オプション）
@@ -3743,26 +3936,35 @@ function getPerformanceReportById(reportId, sessionId = null) {
     }
     
     const rowStaffName = String(targetRow[headers.indexOf('スタッフ名')] || '').trim();
-    
+    const rowStoreName = String(targetRow[headers.indexOf('所属店舗')] || '').trim();
+
     // 権限チェック：セッションがある場合のみ所有者確認（セッション切れでも閲覧可能にする）
     if (user && staffName) {
-      const staffNameVariants = [
-        staffName.trim(),
-        staffName.replace(/　/g, ' ').trim(),
-        staffName.replace(/ /g, '　').trim()
-      ];
-      
-      const rowStaffTrimmed = rowStaffName.trim();
-      const isMatch = staffNameVariants.some(variant => {
-        const variantTrimmed = variant.trim();
-        return rowStaffTrimmed === variantTrimmed || 
-               rowStaffTrimmed.includes(variantTrimmed) || 
-               variantTrimmed.includes(rowStaffTrimmed);
-      });
-      
       // 経営オーナーは全てのレポートを閲覧可能
-      if (!isMatch && user.role !== '経営オーナー') {
-        return { success: false, message: 'この実績報告へのアクセス権限がありません' };
+      if (user.role === '経営オーナー') {
+        // 許可
+      } else if (user.role === 'FCオーナー') {
+        // FCオーナーは自店舗の報告のみ閲覧可能
+        if (!canAccessStore(rowStoreName)) {
+          return { success: false, message: 'この実績報告へのアクセス権限がありません' };
+        }
+      } else {
+        // スタッフは自分の報告のみ閲覧可能
+        const staffNameVariants = [
+          staffName.trim(),
+          staffName.replace(/　/g, ' ').trim(),
+          staffName.replace(/ /g, '　').trim()
+        ];
+        const rowStaffTrimmed = rowStaffName.trim();
+        const isMatch = staffNameVariants.some(variant => {
+          const variantTrimmed = variant.trim();
+          return rowStaffTrimmed === variantTrimmed ||
+                 rowStaffTrimmed.includes(variantTrimmed) ||
+                 variantTrimmed.includes(rowStaffTrimmed);
+        });
+        if (!isMatch) {
+          return { success: false, message: 'この実績報告へのアクセス権限がありません' };
+        }
       }
     }
     
@@ -3910,7 +4112,7 @@ function updatePerformanceReport(reportId, updateData, sessionId) {
  * @return {Sheet} 顧客マスタシート
  */
 function getCustomerMasterSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let sheet = ss.getSheetByName(CUSTOMER_MASTER_SHEET_NAME);
   
   if (!sheet) {
@@ -3935,7 +4137,7 @@ function getCustomerMasterSheet() {
  * @return {Sheet} 顧客登録シート
  */
 function getCustomerRegisterSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   const sheetName = '顧客登録';
   let sheet = ss.getSheetByName(sheetName);
   
@@ -4178,7 +4380,7 @@ function getRegisteredCustomers(sessionId = null) {
   const isAdmin = user && user.role === '経営オーナー';
   
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('顧客登録');
     
     if (!sheet) {
@@ -4367,7 +4569,7 @@ function getCustomerByRowIndex(rowIndex, sessionId = null) {
   }
   
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('顧客登録');
     
     if (!sheet) {
@@ -4443,7 +4645,7 @@ function formatDateValue(value) {
  */
 function assignIdsToExistingCustomers() {
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('顧客登録');
     
     if (!sheet) {
@@ -4566,7 +4768,7 @@ function getCustomerById(customerId, sessionId = null) {
       // セッションがない場合でも続行（認証なしでも確認できるようにする）
     }
     
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('顧客登録');
     
     if (!sheet) {
@@ -4664,7 +4866,7 @@ function getCustomerById(customerId, sessionId = null) {
  * @return {Sheet} 顧客継続履歴シート
  */
 function getCustomerContinueHistorySheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   const sheetName = '顧客継続履歴';
   let sheet = ss.getSheetByName(sheetName);
   
@@ -4873,7 +5075,7 @@ function getCustomerContinueHistory(customerId, sessionId = null) {
  * @return {Sheet} 口コミシート
  */
 function getReviewSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(getSpreadsheetId());
   let sheet = ss.getSheetByName('口コミ取得数');
   if (!sheet) {
     sheet = ss.insertSheet('口コミ取得数');
@@ -5030,7 +5232,7 @@ function getReviewCountsByYearMonth(yearMonth, sessionId) {
       try { setSession(sessionId); } catch (e) {}
     }
     
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('口コミ取得数');
     if (!sheet) return {};
     
@@ -5084,7 +5286,7 @@ function getStaffRewardMaster(sessionId) {
     const user = getCurrentUser();
     if (!user) return { error: 'ログインが必要です', data: [] };
 
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName(STAFF_MASTER_SHEET_NAME);
     if (!sheet) return { error: 'スタッフマスタが見つかりません', data: [] };
 
@@ -5164,7 +5366,7 @@ function calculateRewards(yearMonth, sessionId, storeName) {
     // スタッフは報酬管理にアクセス不可
     if (user.role === 'スタッフ') return { error: 'アクセス権限がありません' };
 
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
 
     // 1. スタッフマスタから報酬制度情報を取得
     const staffMaster = getStaffRewardMaster(sessionId);
@@ -5586,7 +5788,7 @@ function getAvailableRewardMonths(sessionId) {
     const user = getCurrentUser();
     if (!user) return [];
 
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報告データシート履歴');
     if (!sheet) return [];
 
@@ -5691,7 +5893,7 @@ function saveRewardCalculation(yearMonth, sessionId, storeName) {
     const rewards = calculateRewards(yearMonth, sessionId, storeName);
     if (rewards.error) return rewards;
 
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
 
     // 報酬計算結果シートを取得/作成
     let rewardSheet = ss.getSheetByName('報酬計算結果');
@@ -5769,7 +5971,7 @@ function getSavedRewardResults(yearMonth, sessionId) {
     if (!user) return { error: 'ログインが必要です' };
     if (user.role === 'スタッフ') return { error: 'アクセス権限がありません' };
 
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(getSpreadsheetId());
     const sheet = ss.getSheetByName('報酬計算結果');
     if (!sheet) return { data: [] };
 
