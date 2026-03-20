@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skill Matching Platform</title>
+    <style>
+      :root {
+        --bg: #0f1115;
+        --card: #161a23;
+        --soft: #202838;
+        --text: #eef2ff;
+        --sub: #9fb0d3;
+        --accent: #66f0c0;
+        --danger: #ff7d95;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: radial-gradient(circle at 10% 0%, #1c2a45, var(--bg) 45%);
+        color: var(--text);
+      }
+
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      .lead {
+        color: var(--sub);
+        margin: 0 0 18px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid.cols-2 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        background: linear-gradient(170deg, #1a2130, #131723);
+        border: 1px solid #25304b;
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      label {
+        display: block;
+        color: var(--sub);
+        font-size: 12px;
+        margin: 8px 0 4px;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #2c3753;
+        background: var(--soft);
+        color: var(--text);
+      }
+
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: #12211e;
+      }
+
+      .secondary {
+        background: #32405f;
+        color: #eff3ff;
+      }
+
+      .danger {
+        background: var(--danger);
+        color: #270811;
+      }
+
+      .status {
+        font-size: 13px;
+        color: var(--sub);
+        margin-top: 8px;
+        min-height: 19px;
+      }
+
+      .member {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #31405f;
+        background: #161e2d;
+      }
+
+      .member h3 {
+        margin: 0 0 4px;
+        font-size: 16px;
+      }
+
+      .muted {
+        color: var(--sub);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>スキルマッチング（かんたん版）</h1>
+      <p class="lead">一覧表示 / メンバー登録 / 問い合わせ / Stripe決済まで1画面で実行できます。</p>
+
+      <div class="grid cols-2">
+        <section class="card">
+          <h2>メンバー検索</h2>
+          <label>キーワード（肩書き・スキル）</label>
+          <input id="keyword" placeholder="例: GAS" />
+          <label>最小時給</label>
+          <input id="minRate" type="number" placeholder="0" />
+          <label>最大時給</label>
+          <input id="maxRate" type="number" placeholder="100000" />
+          <button class="secondary" id="searchBtn">検索する</button>
+          <div class="status" id="searchStatus"></div>
+          <div class="grid" id="members"></div>
+        </section>
+
+        <section class="card">
+          <h2>メンバー登録</h2>
+          <label>表示名 *</label>
+          <input id="regDisplayName" />
+          <label>肩書き</label>
+          <input id="regDisplayTitle" />
+          <label>スキルタグ *（カンマ区切り）</label>
+          <input id="regSkillTags" placeholder="GAS,Automation" />
+          <label>時給</label>
+          <input id="regHourlyRate" type="number" />
+          <label>プロフィール</label>
+          <textarea id="regProfileText"></textarea>
+          <label>ポートフォリオURL</label>
+          <input id="regPortfolioUrl" />
+          <label>メール *</label>
+          <input id="regEmail" type="email" />
+          <button class="primary" id="registerBtn">登録する</button>
+          <div class="status" id="registerStatus"></div>
+        </section>
+      </div>
+
+      <div class="grid cols-2" style="margin-top: 14px">
+        <section class="card">
+          <h2>問い合わせ送信</h2>
+          <p class="muted">メンバーIDは検索結果カードに表示されます。</p>
+          <label>memberRecordId *</label>
+          <input id="inqMemberRecordId" />
+          <label>依頼主名 *</label>
+          <input id="inqClientName" />
+          <label>依頼主メール *</label>
+          <input id="inqClientEmail" type="email" />
+          <label>相談内容 *</label>
+          <textarea id="inqMessage"></textarea>
+          <button class="primary" id="inquiryBtn">問い合わせる</button>
+          <div class="status" id="inquiryStatus"></div>
+        </section>
+
+        <section class="card">
+          <h2>Stripe決済</h2>
+          <label>memberRecordId *</label>
+          <input id="payMemberRecordId" />
+          <label>サービス名 *</label>
+          <input id="payServiceTitle" placeholder="GAS自動化サポート 1時間" />
+          <label>金額（円）*</label>
+          <input id="payAmount" type="number" placeholder="5000" />
+          <label>購入者メール</label>
+          <input id="payBuyerEmail" type="email" />
+          <button class="danger" id="checkoutBtn">決済ページへ進む</button>
+          <div class="status" id="checkoutStatus"></div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const api = "";
+
+      const qs = (id) => document.getElementById(id);
+      const setStatus = (id, text) => {
+        qs(id).textContent = text;
+      };
+
+      const escapeHtml = (value) =>
+        String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+
+      async function searchMembers() {
+        setStatus("searchStatus", "検索中...");
+        const params = new URLSearchParams();
+        if (qs("keyword").value) params.set("keyword", qs("keyword").value);
+        if (qs("minRate").value) params.set("minRate", qs("minRate").value);
+        if (qs("maxRate").value) params.set("maxRate", qs("maxRate").value);
+
+        const res = await fetch(`${api}/api/members?${params.toString()}`);
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus("searchStatus", data.error || "検索に失敗しました");
+          return;
+        }
+
+        const list = qs("members");
+        list.innerHTML = "";
+        data.members.forEach((member) => {
+          const div = document.createElement("div");
+          div.className = "member";
+          div.innerHTML = `
+            <h3>${escapeHtml(member.displayName)} <span class="muted">(${escapeHtml(member.displayTitle || "肩書き未設定")})</span></h3>
+            <div class="muted">ID: ${escapeHtml(member.id)}</div>
+            <div>スキル: ${escapeHtml(member.skillTags || "-")}</div>
+            <div>時給: ¥${escapeHtml(member.hourlyRate || 0)}</div>
+            <div class="muted">連絡先: ${escapeHtml(member.email || "-")}</div>
+          `;
+          list.appendChild(div);
+        });
+        setStatus("searchStatus", `${data.members.length}件ヒットしました`);
+      }
+
+      async function registerMember() {
+        setStatus("registerStatus", "登録中...");
+        const payload = {
+          displayName: qs("regDisplayName").value,
+          displayTitle: qs("regDisplayTitle").value,
+          skillTags: qs("regSkillTags").value,
+          hourlyRate: Number(qs("regHourlyRate").value || 0),
+          profileText: qs("regProfileText").value,
+          portfolioUrl: qs("regPortfolioUrl").value,
+          email: qs("regEmail").value
+        };
+        const res = await fetch(`${api}/api/members`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus("registerStatus", data.error || "登録に失敗しました");
+          return;
+        }
+        setStatus("registerStatus", `登録完了: ${data.memberId}`);
+      }
+
+      async function submitInquiry() {
+        setStatus("inquiryStatus", "送信中...");
+        const payload = {
+          memberRecordId: qs("inqMemberRecordId").value,
+          clientName: qs("inqClientName").value,
+          clientEmail: qs("inqClientEmail").value,
+          message: qs("inqMessage").value
+        };
+        const res = await fetch(`${api}/api/inquiries`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus("inquiryStatus", data.error || "問い合わせに失敗しました");
+          return;
+        }
+        setStatus("inquiryStatus", `送信完了: ${data.inquiryId}`);
+      }
+
+      async function checkout() {
+        setStatus("checkoutStatus", "決済URLを作成中...");
+        const payload = {
+          memberRecordId: qs("payMemberRecordId").value,
+          serviceTitle: qs("payServiceTitle").value,
+          amount: Number(qs("payAmount").value || 0),
+          buyerEmail: qs("payBuyerEmail").value
+        };
+        const res = await fetch(`${api}/api/payments/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus("checkoutStatus", data.error || "決済準備に失敗しました");
+          return;
+        }
+        setStatus("checkoutStatus", "決済ページへ移動します...");
+        window.location.href = data.checkoutUrl;
+      }
+
+      qs("searchBtn").addEventListener("click", searchMembers);
+      qs("registerBtn").addEventListener("click", registerMember);
+      qs("inquiryBtn").addEventListener("click", submitInquiry);
+      qs("checkoutBtn").addEventListener("click", checkout);
+      searchMembers();
+    </script>
+  </body>
+</html>

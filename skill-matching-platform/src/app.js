@@ -4,11 +4,15 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
 import Stripe from "stripe";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 8787);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -102,6 +106,7 @@ app.post(
 );
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });

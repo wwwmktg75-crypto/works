@@ -8,6 +8,7 @@ Supabase中心で最短立ち上げする、スキルマッチングMVP用の最
 - 問い合わせ送信 + メール同報 (`POST /api/inquiries`)
 - Stripe Checkout発行 (`POST /api/payments/checkout`)
 - Stripe Webhook受信と注文記録 (`POST /api/payments/webhook`)
+- かんたんフロント画面 (`GET /` -> `public/index.html`)
 
 ## セットアップ
 1. 依存関係をインストール
