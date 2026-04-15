@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bottle Mail — あなたの作品が、誰かに届く</title>
+  <style>
+    :root {
+      --ocean-deep: #020b18;
+      --ocean-mid:  #061d35;
+      --ocean-surf: #0a3357;
+      --ocean-glow: #0d6efd;
+      --foam:       #a8d8ea;
+      --foam-light: #e0f4ff;
+      --amber:      #f4a261;
+      --amber-glow: #e76f51;
+      --text:       #cce8f4;
+      --text-dim:   #5e8fa8;
+      --card-bg:    rgba(6,29,53,0.85);
+      --radius:     16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: var(--ocean-deep);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== 波アニメ背景 ===== */
+    .ocean-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(180deg, #020b18 0%, #061d35 50%, #020b18 100%);
+    }
+    .ocean-bg canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .4; }
+
+    /* ===== レイアウト ===== */
+    .app { position: relative; z-index: 1; min-height: 100vh; }
+
+    /* ===== ナビ ===== */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 28px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+      background: rgba(2,11,24,.6);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 700; letter-spacing: .08em; color: var(--foam-light); }
+    .nav-logo span { color: var(--amber); }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+    .btn {
+      padding: 8px 20px; border-radius: 100px; border: none; cursor: pointer;
+      font-size: .9rem; font-weight: 600; transition: all .2s;
+    }
+    .btn-ghost {
+      background: transparent; color: var(--text-dim);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+    .btn-primary {
+      background: linear-gradient(135deg, #0a6ebd, #0d8ade);
+      color: #fff; box-shadow: 0 4px 16px rgba(13,110,253,.3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(13,110,253,.5); }
+    .btn-amber {
+      background: linear-gradient(135deg, #e76f51, #f4a261);
+      color: #fff; box-shadow: 0 4px 16px rgba(231,111,81,.3);
+    }
+    .btn-amber:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(231,111,81,.5); }
+    .btn-lg { padding: 14px 36px; font-size: 1rem; }
+
+    /* ===== ビュー管理 ===== */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ===== ヒーロー ===== */
+    #view-hero {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; min-height: calc(100vh - 65px);
+      padding: 60px 20px;
+      gap: 32px;
+    }
+    #view-hero.active { display: flex; }
+
+    .hero-bottle {
+      font-size: 6rem; animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(244,162,97,.4));
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-18px) rotate(3deg); }
+    }
+    .hero-title {
+      font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800;
+      line-height: 1.3; letter-spacing: -.01em;
+    }
+    .hero-title .accent { color: var(--amber); }
+    .hero-sub {
+      font-size: 1.05rem; color: var(--text-dim); max-width: 480px; line-height: 1.8;
+    }
+    .hero-steps {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 720px;
+    }
+    .step-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius); padding: 20px 24px; flex: 1; min-width: 180px; max-width: 220px;
+      text-align: left;
+    }
+    .step-icon { font-size: 1.8rem; margin-bottom: 10px; }
+    .step-label { font-size: .8rem; color: var(--text-dim); margin-bottom: 4px; }
+    .step-text { font-size: .95rem; font-weight: 600; line-height: 1.5; }
+
+    /* ===== フォームカード ===== */
+    .form-card {
+      max-width: 600px; margin: 48px auto; padding: 36px;
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px; backdrop-filter: blur(20px);
+    }
+    .form-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+    .form-sub { color: var(--text-dim); font-size: .9rem; margin-bottom: 28px; line-height: 1.7; }
+
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: .85rem; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; }
+    .field input, .field textarea {
+      width: 100%; padding: 12px 16px;
+      background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; color: var(--text); font-size: .95rem;
+      outline: none; transition: border-color .2s;
+      font-family: inherit;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--ocean-glow); }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field input::placeholder { color: var(--text-dim); }
+
+    .url-list { display: flex; flex-direction: column; gap: 10px; }
+    .url-row { display: flex; gap: 8px; }
+    .url-row input { flex: 1; }
+    .btn-icon {
+      width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15);
+      background: transparent; color: var(--text-dim); cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .btn-icon:hover { background: rgba(255,255,255,.08); color: var(--text); }
+    .btn-add {
+      margin-top: 8px; background: transparent; border: 1px dashed rgba(255,255,255,.2);
+      color: var(--text-dim); cursor: pointer; border-radius: 10px; padding: 10px;
+      width: 100%; font-size: .85rem; transition: all .2s;
+    }
+    .btn-add:hover { border-color: var(--ocean-glow); color: var(--text); }
+
+    .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ===== ローディング ===== */
+    #view-analyzing {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      min-height: calc(100vh - 65px); gap: 24px; text-align: center; padding: 40px;
+    }
+    #view-analyzing.active { display: flex; }
+    .analyze-orb {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(13,110,253,.6) 0%, transparent 70%);
+      animation: pulse 2s ease-in-out infinite;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); box-shadow: 0 0 30px rgba(13,110,253,.3); }
+      50%      { transform: scale(1.12); box-shadow: 0 0 60px rgba(13,110,253,.6); }
+    }
+    .analyze-status { font-size: 1rem; color: var(--text-dim); min-height: 24px; }
+
+    /* ===== 名前確認 ===== */
+    .name-candidates { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+    .name-card {
+      padding: 16px 20px; border-radius: 12px;
+      border: 2px solid transparent;
+      background: rgba(0,0,0,.3);
+      cursor: pointer; transition: all .2s;
+    }
+    .name-card:hover { border-color: var(--ocean-glow); background: rgba(13,110,253,.1); }
+    .name-card.selected { border-color: var(--amber); background: rgba(244,162,97,.08); }
+    .name-card-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .name-card-reason { font-size: .8rem; color: var(--text-dim); }
+    .divider { text-align: center; color: var(--text-dim); font-size: .85rem; margin: 16px 0; }
+
+    /* ===== タグ ===== */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .tag {
+      padding: 4px 12px; border-radius: 100px;
+      background: rgba(13,110,253,.15); border: 1px solid rgba(13,110,253,.3);
+      font-size: .8rem; color: var(--foam);
+    }
+
+    /* ===== ダッシュボード ===== */
+    #view-dashboard { padding: 32px 20px; max-width: 720px; margin: 0 auto; }
+    .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .dash-title { font-size: 1.3rem; font-weight: 700; }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--amber-glow); color: #fff; font-size: .7rem; font-weight: 700;
+      margin-left: 8px;
+    }
+    .empty-state {
+      text-align: center; padding: 64px 20px; color: var(--text-dim);
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: .5; }
+
+    /* ===== ボトルカード ===== */
+    .bottle-list { display: flex; flex-direction: column; gap: 14px; }
+    .bottle-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius); padding: 20px 24px; cursor: pointer;
+      transition: all .2s; display: flex; align-items: center; gap: 16px;
+    }
+    .bottle-card:hover { border-color: rgba(255,255,255,.2); transform: translateY(-2px); }
+    .bottle-card.unread { border-left: 3px solid var(--amber); }
+    .bottle-icon { font-size: 2rem; flex-shrink: 0; }
+    .bottle-info { flex: 1; min-width: 0; }
+    .bottle-sender { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .bottle-meta { font-size: .82rem; color: var(--text-dim); }
+    .bottle-score {
+      flex-shrink: 0; text-align: center;
+    }
+    .score-num { font-size: 1.4rem; font-weight: 800; color: var(--amber); }
+    .score-label { font-size: .7rem; color: var(--text-dim); }
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--amber); margin-right: 6px; animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    /* ===== ボトル詳細 ===== */
+    #view-bottle { padding: 32px 20px; max-width: 600px; margin: 0 auto; }
+    .back-btn {
+      background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+      font-size: .9rem; display: flex; align-items: center; gap: 6px; margin-bottom: 24px;
+      padding: 0; transition: color .2s;
+    }
+    .back-btn:hover { color: var(--text); }
+    .bottle-detail-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 24px; padding: 32px; margin-bottom: 24px;
+    }
+    .bottle-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+    }
+    .bottle-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #0a3357, #0d6efd);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; flex-shrink: 0;
+    }
+    .sender-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .match-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(244,162,97,.15); border: 1px solid rgba(244,162,97,.3);
+      border-radius: 100px; padding: 4px 12px; font-size: .82rem; color: var(--amber);
+    }
+    .section-label { font-size: .82rem; color: var(--text-dim); font-weight: 600; margin-bottom: 8px; letter-spacing: .05em; }
+    .personality-text { line-height: 1.8; color: var(--text); margin-bottom: 20px; }
+    .match-reason-text {
+      background: rgba(13,110,253,.08); border: 1px solid rgba(13,110,253,.2);
+      border-radius: 10px; padding: 14px 16px; font-size: .9rem; line-height: 1.7;
+      color: var(--foam);
+    }
+
+    /* ===== チャット ===== */
+    #view-chat { display: flex; flex-direction: column; height: calc(100vh - 65px); max-width: 600px; margin: 0 auto; }
+    .chat-header {
+      padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+    }
+    .chat-title { font-weight: 700; font-size: 1.05rem; }
+    .chat-sub { font-size: .8rem; color: var(--text-dim); }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 20px 20px 10px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
+    .msg {
+      max-width: 76%; padding: 12px 16px; border-radius: 18px;
+      font-size: .93rem; line-height: 1.6;
+    }
+    .msg.mine {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #0a5fa0, #0d6efd);
+      border-bottom-right-radius: 4px;
+    }
+    .msg.theirs {
+      align-self: flex-start;
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,.08);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-meta { font-size: .7rem; color: var(--text-dim); margin-top: 4px; }
+    .msg.mine .msg-meta { text-align: right; }
+    .chat-input-area {
+      padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.06);
+      background: rgba(2,11,24,.8); backdrop-filter: blur(10px);
+    }
+    .chat-input-row { display: flex; gap: 10px; }
+    .chat-input-row input {
+      flex: 1; padding: 12px 18px; border-radius: 100px;
+      background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.12);
+      color: var(--text); font-size: .93rem; outline: none;
+      transition: border-color .2s; font-family: inherit;
+    }
+    .chat-input-row input:focus { border-color: var(--ocean-glow); }
+    .btn-send {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, #0a6ebd, #0d8ade);
+      border: none; color: #fff; cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; flex-shrink: 0;
+    }
+    .btn-send:hover { transform: scale(1.08); }
+
+    /* ===== プロフィールバー ===== */
+    .profile-bar {
+      background: rgba(10,51,87,.5); border-radius: 12px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+    }
+    .profile-bar .avatar { font-size: 2rem; }
+    .profile-bar .info { flex: 1; }
+    .profile-bar .name { font-weight: 700; margin-bottom: 2px; }
+    .profile-bar .sub { font-size: .8rem; color: var(--text-dim); }
+
+    /* ===== トースト ===== */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: rgba(10,51,87,.95); border: 1px solid rgba(255,255,255,.15);
+      border-radius: 100px; padding: 12px 24px; font-size: .9rem;
+      backdrop-filter: blur(20px); transition: transform .3s ease; z-index: 1000;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 500px) {
+      .form-card { padding: 24px 20px; }
+      .social-grid { grid-template-columns: 1fr; }
+      .hero-steps { flex-direction: column; align-items: center; }
+      .step-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="ocean-bg"><canvas id="oceanCanvas"></canvas></div>
+<div class="app">
+  <nav>
+    <div class="nav-logo">🌊 Bottle<span>Mail</span></div>
+    <div class="nav-actions" id="navActions">
+      <button class="btn btn-ghost" onclick="showView('view-register')">登録する</button>
+      <button class="btn btn-primary" onclick="showView('view-login')">ログイン</button>
+    </div>
+  </nav>
+
+  <!-- ヒーロー -->
+  <div id="view-hero" class="view active">
+    <div class="hero-bottle">🍾</div>
+    <h1 class="hero-title">あなたの<span class="accent">作品</span>が、<br>誰かへの<span class="accent">ボトルメール</span>になる</h1>
+    <p class="hero-sub">プロジェクトやSNSをAIが分析。あなたに似た誰かへ、自動でメッセージを届けます。</p>
+    <div class="hero-steps">
+      <div class="step-card">
+        <div class="step-icon">🔗</div>
+        <div class="step-label">STEP 1</div>
+        <div class="step-text">作ったもののURLを入れる</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">🤖</div>
+        <div class="step-label">STEP 2</div>
+        <div class="step-text">AIがあなたの個性を読み取る</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">🍾</div>
+        <div class="step-label">STEP 3</div>
+        <div class="step-text">相性の良い人へボトルが届く</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">💬</div>
+        <div class="step-label">STEP 4</div>
+        <div class="step-text">気に入ったら返信してつながる</div>
+      </div>
+    </div>
+    <button class="btn btn-amber btn-lg" onclick="showView('view-register')">ボトルを流してみる</button>
+  </div>
+
+  <!-- 登録フォーム -->
+  <div id="view-register" class="view">
+    <div class="form-card">
+      <div class="form-title">🔗 プロジェクト情報を入力</div>
+      <div class="form-sub">作ったアプリ・サイト・GitHubなどのURLを入れてください。<br>AIがあなたの個性を分析します。</div>
+
+      <div class="field">
+        <label>メールアドレス（通知に使用）</label>
+        <input type="email" id="emailInput" placeholder="you@example.com">
+      </div>
+
+      <div class="field">
+        <label>プロジェクト / アプリのURL <span style="color:var(--amber-glow)">*</span></label>
+        <div class="url-list" id="urlList">
+          <div class="url-row">
+            <input type="url" placeholder="https://yourproject.com" class="project-url">
+            <button class="btn-icon" onclick="removeUrl(this)" title="削除">✕</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addUrl()">＋ URLを追加</button>
+      </div>
+
+      <button class="btn btn-primary btn-lg" style="width:100%;margin-bottom:12px" onclick="startAnalyze()">
+        AIで分析する →
+      </button>
+
+      <details class="field" style="margin-bottom:0">
+        <summary style="cursor:pointer;font-size:.85rem;color:var(--text-dim);font-weight:600;list-style:none;padding:10px 0;user-select:none">
+          ＋ SNSリンクも追加する（任意）
+        </summary>
+        <div class="social-grid" style="margin-top:12px">
+          <input type="url" id="twitterInput" placeholder="X (Twitter) URL">
+          <input type="url" id="instagramInput" placeholder="Instagram URL">
+          <input type="url" id="facebookInput" placeholder="Facebook URL">
+          <input type="url" id="githubInput" placeholder="GitHub URL">
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- AI分析中 -->
+  <div id="view-analyzing" class="view">
+    <div class="analyze-orb">🤖</div>
+    <h2 style="font-size:1.4rem">AIが分析中...</h2>
+    <div class="analyze-status" id="analyzeStatus">URLを読み込んでいます</div>
+  </div>
+
+  <!-- 名前確認 -->
+  <div id="view-name" class="view">
+    <div class="form-card">
+      <div class="form-title">✨ あなたのキャラクター名</div>
+      <div class="form-sub" id="personalitySummaryText"></div>
+
+      <div id="tagsContainer" class="tags"></div>
+
+      <div class="field" style="margin-top:20px">
+        <label>AIが提案した名前（クリックで選択）</label>
+        <div class="name-candidates" id="nameCandidates"></div>
+      </div>
+
+      <div class="divider">— または自分で決める —</div>
+
+      <div class="field">
+        <label>オリジナル名</label>
+        <input type="text" id="customNameInput" placeholder="好きな名前を入力...">
+      </div>
+
+      <button class="btn btn-amber btn-lg" style="width:100%" onclick="registerUser()">
+        🍾 ボトルを流す
+      </button>
+    </div>
+  </div>
+
+  <!-- 登録完了 -->
+  <div id="view-complete" class="view">
+    <div class="form-card" style="text-align:center">
+      <div style="font-size:4rem;margin-bottom:16px">🌊</div>
+      <h2 style="font-size:1.5rem;margin-bottom:12px">ボトルが海に流れました</h2>
+      <p style="color:var(--text-dim);line-height:1.8;margin-bottom:28px">
+        AIが相性の良い人を探しています。<br>
+        マッチした人のボトルが届いたら通知します。
+      </p>
+      <div class="profile-bar" style="margin-bottom:24px">
+        <div class="avatar">🍾</div>
+        <div class="info">
+          <div class="name" id="completeName"></div>
+          <div class="sub" id="completeSubText"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%" onclick="loadDashboard()">
+        受信ボックスを見る
+      </button>
+    </div>
+  </div>
+
+  <!-- ログイン -->
+  <div id="view-login" class="view">
+    <div class="form-card">
+      <div class="form-title">🔑 ログイン</div>
+      <div class="form-sub">登録済みのユーザーIDを入力してください。</div>
+      <div class="field">
+        <label>ユーザーID</label>
+        <input type="text" id="loginIdInput" placeholder="xxxx-xxxx-xxxx-xxxx">
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%" onclick="loginUser()">ログイン</button>
+    </div>
+  </div>
+
+  <!-- ダッシュボード -->
+  <div id="view-dashboard" class="view">
+    <div class="dash-header">
+      <div class="dash-title">
+        📬 受信ボックス
+        <span class="badge" id="unreadBadge" style="display:none">0</span>
+      </div>
+      <button class="btn btn-ghost" onclick="loadDashboard()">更新</button>
+    </div>
+    <div id="profileBarContainer"></div>
+    <div id="bottleListContainer">
+      <div class="empty-state">
+        <div class="empty-icon">🌊</div>
+        <div>読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ボトル詳細 -->
+  <div id="view-bottle" class="view">
+    <button class="back-btn" onclick="showView('view-dashboard')">← 戻る</button>
+    <div id="bottleDetailContent"></div>
+    <button class="btn btn-amber btn-lg" style="width:100%" id="openChatBtn" onclick="openChat()">
+      💬 メッセージを送る
+    </button>
+  </div>
+
+  <!-- チャット -->
+  <div id="view-chat" class="view">
+    <div class="chat-header">
+      <button class="back-btn" style="margin-bottom:0" onclick="showView('view-bottle')">← 戻る</button>
+      <div class="chat-title" id="chatTitle"></div>
+      <div class="chat-sub" id="chatSub"></div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="btn-send" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 設定 =====
+const API = "";  // 同一オリジン
+
+// ===== 状態 =====
+let state = {
+  userId: localStorage.getItem("bottleUserId"),
+  analysis: null,
+  selectedName: "",
+  currentBottle: null,
+  registerData: {}
+};
+
+// ===== 初期化 =====
+window.addEventListener("load", () => {
+  initOcean();
+  if (state.userId) {
+    updateNavLoggedIn();
+    loadDashboard();
+  }
+});
+
+function updateNavLoggedIn() {
+  document.getElementById("navActions").innerHTML = `
+    <button class="btn btn-ghost" onclick="loadDashboard()">📬 受信ボックス</button>
+    <button class="btn btn-ghost" onclick="logout()">ログアウト</button>
+  `;
+}
+
+function logout() {
+  localStorage.removeItem("bottleUserId");
+  state.userId = null;
+  document.getElementById("navActions").innerHTML = `
+    <button class="btn btn-ghost" onclick="showView('view-register')">登録する</button>
+    <button class="btn btn-primary" onclick="showView('view-login')">ログイン</button>
+  `;
+  showView("view-hero");
+}
+
+// ===== ビュー切替 =====
+function showView(id) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// ===== URL入力 =====
+function addUrl() {
+  const list = document.getElementById("urlList");
+  const row = document.createElement("div");
+  row.className = "url-row";
+  row.innerHTML = `<input type="url" placeholder="https://..." class="project-url"><button class="btn-icon" onclick="removeUrl(this)">✕</button>`;
+  list.appendChild(row);
+}
+
+function removeUrl(btn) {
+  const rows = document.querySelectorAll(".url-row");
+  if (rows.length <= 1) return;
+  btn.closest(".url-row").remove();
+}
+
+// ===== AI分析 =====
+async function startAnalyze() {
+  const email = document.getElementById("emailInput").value.trim();
+  const urls = [...document.querySelectorAll(".project-url")]
+    .map(i => i.value.trim()).filter(Boolean);
+
+  if (!email) return toast("メールアドレスを入力してください");
+  if (!urls.length) return toast("URLを1つ以上入力してください");
+
+  const social_links = {
+    twitter:   document.getElementById("twitterInput").value.trim() || null,
+    instagram: document.getElementById("instagramInput").value.trim() || null,
+    facebook:  document.getElementById("facebookInput").value.trim() || null,
+    github:    document.getElementById("githubInput").value.trim() || null
+  };
+
+  state.registerData = { email, project_urls: urls, social_links };
+
+  showView("view-analyzing");
+
+  const steps = ["URLを読み込んでいます", "AIが個性を分析中...", "名前を考えています..."];
+  let si = 0;
+  const interval = setInterval(() => {
+    si = (si + 1) % steps.length;
+    document.getElementById("analyzeStatus").textContent = steps[si];
+  }, 1800);
+
+  try {
+    const res = await fetch(`${API}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ project_urls: urls, social_links })
+    });
+    const data = await res.json();
+    clearInterval(interval);
+
+    // APIキー未設定時はデモ用モックデータで続行
+    if (!res.ok) {
+      if (data.error?.includes("ANTHROPIC_API_KEY")) {
+        const mock = mockAnalysis(urls[0]);
+        state.analysis = mock;
+        showNameView(mock);
+        return;
+      }
+      throw new Error(data.error || "分析に失敗しました");
+    }
+
+    state.analysis = data;
+    showNameView(data);
+  } catch (err) {
+    clearInterval(interval);
+    toast(`エラー: ${err.message}`);
+    showView("view-register");
+  }
+}
+
+function mockAnalysis(url) {
+  const domain = url.replace(/https?:\/\//, "").split("/")[0];
+  return {
+    personality_summary: `${domain} を作り上げたあなたは、細部への気配りと大胆なアイデアを兼ね備えた創り手。技術と美学の境界線を軽やかに越え、ユーザーの体験を第一に考える。`,
+    personality_tags: ["ものづくり", "デザイン思考", "こだわり派", "オープンマインド", "夜型クリエイター"],
+    name_suggestions: [
+      { name: "深海の設計者", reason: "見えないところまで丁寧に作り込む姿勢から" },
+      { name: "夜明けを待つコード", reason: "静かに、でも確実に世界を変えようとする意志から" },
+      { name: "光る余白の建築家", reason: "余白と空間の使い方に独自の美学を感じるから" }
+    ]
+  };
+}
+
+function showNameView(analysis) {
+  document.getElementById("personalitySummaryText").textContent =
+    analysis.personality_summary || "";
+
+  const tagsEl = document.getElementById("tagsContainer");
+  tagsEl.innerHTML = (analysis.personality_tags || [])
+    .map(t => `<span class="tag">${t}</span>`).join("");
+
+  const candidates = document.getElementById("nameCandidates");
+  candidates.innerHTML = (analysis.name_suggestions || []).map(s => `
+    <div class="name-card" onclick="selectName(this, '${s.name.replace(/'/g, "\\'")}')">
+      <div class="name-card-name">${s.name}</div>
+      <div class="name-card-reason">${s.reason}</div>
+    </div>
+  `).join("");
+
+  showView("view-name");
+}
+
+function selectName(el, name) {
+  document.querySelectorAll(".name-card").forEach(c => c.classList.remove("selected"));
+  el.classList.add("selected");
+  state.selectedName = name;
+  document.getElementById("customNameInput").value = "";
+}
+
+// ===== ユーザー登録 =====
+async function registerUser() {
+  const customName = document.getElementById("customNameInput").value.trim();
+  const name = customName || state.selectedName;
+  if (!name) return toast("名前を選択または入力してください");
+
+  const body = {
+    ...state.registerData,
+    character_name: name,
+    personality_summary: state.analysis?.personality_summary || "",
+    personality_tags: state.analysis?.personality_tags || []
+  };
+
+  try {
+    const res = await fetch(`${API}/api/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "登録に失敗しました");
+
+    state.userId = data.user.id;
+    localStorage.setItem("bottleUserId", state.userId);
+    updateNavLoggedIn();
+
+    document.getElementById("completeName").textContent = data.user.character_name;
+    document.getElementById("completeSubText").textContent =
+      `ID: ${data.user.id.slice(0,8)}... — ${(data.user.personality_tags || []).slice(0,2).join(" / ")}`;
+
+    showView("view-complete");
+  } catch (err) {
+    toast(`エラー: ${err.message}`);
+  }
+}
+
+// ===== ログイン =====
+async function loginUser() {
+  const id = document.getElementById("loginIdInput").value.trim();
+  if (!id) return toast("ユーザーIDを入力してください");
+
+  try {
+    const res = await fetch(`${API}/api/users/me`, {
+      headers: { "x-user-id": id }
+    });
+    if (!res.ok) throw new Error("ユーザーが見つかりません");
+    state.userId = id;
+    localStorage.setItem("bottleUserId", id);
+    updateNavLoggedIn();
+    loadDashboard();
+  } catch (err) {
+    toast(`エラー: ${err.message}`);
+  }
+}
+
+// ===== ダッシュボード =====
+async function loadDashboard() {
+  showView("view-dashboard");
+  if (!state.userId) { showView("view-hero"); return; }
+
+  try {
+    const [userRes, bottleRes] = await Promise.all([
+      fetch(`${API}/api/users/me`, { headers: { "x-user-id": state.userId } }),
+      fetch(`${API}/api/bottles`,  { headers: { "x-user-id": state.userId } })
+    ]);
+
+    const { user }    = await userRes.json();
+    const { bottles } = await bottleRes.json();
+
+    // プロフィールバー
+    document.getElementById("profileBarContainer").innerHTML = user ? `
+      <div class="profile-bar">
+        <div class="avatar">🍾</div>
+        <div class="info">
+          <div class="name">${user.character_name}</div>
+          <div class="sub">${(user.personality_tags || []).slice(0,3).join(" · ")}</div>
+        </div>
+      </div>
+    ` : "";
+
+    const unread = (bottles || []).filter(b => b.status === "unread").length;
+    const badge = document.getElementById("unreadBadge");
+    if (unread > 0) { badge.textContent = unread; badge.style.display = ""; }
+    else badge.style.display = "none";
+
+    if (!bottles?.length) {
+      document.getElementById("bottleListContainer").innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🌊</div>
+          <div>まだボトルが届いていません</div>
+          <div style="font-size:.85rem;color:var(--text-dim);margin-top:8px">AIがマッチング中です。しばらくお待ちください。</div>
+        </div>`;
+      return;
+    }
+
+    document.getElementById("bottleListContainer").innerHTML = `
+      <div class="bottle-list">
+        ${bottles.map(b => `
+          <div class="bottle-card ${b.status === 'unread' ? 'unread' : ''}" onclick="openBottle('${b.id}')">
+            <div class="bottle-icon">🍾</div>
+            <div class="bottle-info">
+              <div class="bottle-sender">
+                ${b.status === 'unread' ? '<span class="status-dot"></span>' : ''}
+                ${b.sender?.character_name || "??"}
+              </div>
+              <div class="bottle-meta">${(b.sender?.personality_tags || []).slice(0,2).join(" · ")} · ${formatDate(b.created_at)}</div>
+            </div>
+            <div class="bottle-score">
+              <div class="score-num">${Math.round(b.match_score || 0)}</div>
+              <div class="score-label">マッチ度</div>
+            </div>
+          </div>
+        `).join("")}
+      </div>`;
+  } catch (err) {
+    document.getElementById("bottleListContainer").innerHTML = `
+      <div class="empty-state"><div>読み込みに失敗しました</div></div>`;
+  }
+}
+
+// ===== ボトル詳細 =====
+async function openBottle(bottleId) {
+  try {
+    const res = await fetch(`${API}/api/bottles/${bottleId}/open`, {
+      method: "POST",
+      headers: { "x-user-id": state.userId }
+    });
+    const { bottle } = await res.json();
+    state.currentBottle = bottle;
+
+    const sender = bottle.sender || {};
+    document.getElementById("bottleDetailContent").innerHTML = `
+      <div class="bottle-detail-card">
+        <div class="bottle-header">
+          <div class="bottle-avatar">🍾</div>
+          <div>
+            <div class="sender-name">${sender.character_name || "???"}</div>
+            <div class="match-badge">✨ マッチ度 ${Math.round(bottle.match_score || 0)}点</div>
+          </div>
+        </div>
+
+        ${sender.personality_tags?.length ? `
+          <div class="tags" style="margin-bottom:16px">
+            ${sender.personality_tags.map(t => `<span class="tag">${t}</span>`).join("")}
+          </div>` : ""}
+
+        ${sender.personality_summary ? `
+          <div class="section-label">個性</div>
+          <div class="personality-text">${sender.personality_summary}</div>` : ""}
+
+        <div class="section-label">マッチした理由</div>
+        <div class="match-reason-text">${bottle.match_reason || "AIがあなたたちの相性を感じました"}</div>
+      </div>
+    `;
+
+    document.getElementById("openChatBtn").textContent =
+      bottle.status === "replied" ? "💬 チャットを続ける" : "💬 メッセージを送る";
+
+    showView("view-bottle");
+  } catch (err) {
+    toast("読み込みに失敗しました");
+  }
+}
+
+// ===== チャット =====
+function openChat() {
+  if (!state.currentBottle) return;
+  const sender = state.currentBottle.sender || {};
+  document.getElementById("chatTitle").textContent = sender.character_name || "???";
+  document.getElementById("chatSub").textContent = "マッチしました";
+  loadMessages();
+  showView("view-chat");
+}
+
+async function loadMessages() {
+  if (!state.currentBottle) return;
+  try {
+    const res = await fetch(`${API}/api/messages/${state.currentBottle.id}`, {
+      headers: { "x-user-id": state.userId }
+    });
+    const { messages } = await res.json();
+    renderMessages(messages || []);
+  } catch {}
+}
+
+function renderMessages(messages) {
+  const el = document.getElementById("chatMessages");
+  if (!messages.length) {
+    el.innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:40px 0;font-size:.9rem">最初のメッセージを送ってみましょう 🍾</div>`;
+    return;
+  }
+  el.innerHTML = messages.map(m => {
+    const mine = m.sender_id === state.userId;
+    return `
+      <div>
+        <div class="msg ${mine ? 'mine' : 'theirs'}">${escHtml(m.content)}</div>
+        <div class="msg-meta" style="${mine ? 'text-align:right' : ''}">${formatDate(m.created_at)}</div>
+      </div>`;
+  }).join("");
+  el.scrollTop = el.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("chatInput");
+  const content = input.value.trim();
+  if (!content || !state.currentBottle) return;
+  input.value = "";
+
+  try {
+    await fetch(`${API}/api/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": state.userId },
+      body: JSON.stringify({ bottle_id: state.currentBottle.id, content })
+    });
+    await loadMessages();
+  } catch {
+    toast("送信に失敗しました");
+    input.value = content;
+  }
+}
+
+// ===== ユーティリティ =====
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 60) return "たった今";
+  if (diff < 3600) return `${Math.floor(diff/60)}分前`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}時間前`;
+  return `${Math.floor(diff/86400)}日前`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3000);
+}
+
+// ===== 波アニメ =====
+function initOcean() {
+  const canvas = document.getElementById("oceanCanvas");
+  const ctx = canvas.getContext("2d");
+  let W, H, waves;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    waves = [
+      { y: H*.75, amp: 22, freq: .008, speed: .4, alpha: .15, color:"#0d6efd" },
+      { y: H*.80, amp: 16, freq: .012, speed: .3, alpha: .12, color:"#0a3357" },
+      { y: H*.85, amp: 12, freq: .018, speed: .5, alpha: .10, color:"#061d35" }
+    ];
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const w of waves) {
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (let x = 0; x <= W; x += 4) {
+        const y = w.y + Math.sin(x * w.freq + t * w.speed) * w.amp;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H);
+      ctx.closePath();
+      ctx.fillStyle = w.color;
+      ctx.globalAlpha = w.alpha;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    t += 0.05;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
+</body>
+</html>
