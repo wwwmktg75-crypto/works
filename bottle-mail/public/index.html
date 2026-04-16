@@ -37,8 +37,63 @@
     }
     .ocean-bg canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .4; }
 
+    /* ===== ボトルが流れ着く装飾（背景とUIの間） ===== */
+    .bottle-drift-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .drift-bottle {
+      position: absolute;
+      left: var(--x, 50%);
+      top: -10%;
+      font-size: clamp(1.1rem, 2.2vw, 1.85rem);
+      opacity: 0;
+      filter: drop-shadow(0 0 14px rgba(244, 162, 97, 0.35));
+      animation: driftWashUp var(--dur, 18s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+      will-change: transform, opacity, top;
+    }
+    @keyframes driftWashUp {
+      0% {
+        top: -12%;
+        transform: translateX(-50%) translateX(0) rotate(-12deg) scale(0.75);
+        opacity: 0;
+      }
+      8% { opacity: 0.42; }
+      22% {
+        transform: translateX(-50%) translateX(18px) rotate(10deg) scale(0.95);
+      }
+      45% {
+        transform: translateX(-50%) translateX(-14px) rotate(-8deg) scale(1);
+      }
+      68% {
+        transform: translateX(-50%) translateX(12px) rotate(6deg) scale(1.02);
+      }
+      88% { opacity: 0.38; }
+      100% {
+        top: 88%;
+        transform: translateX(-50%) translateX(0) rotate(4deg) scale(1);
+        opacity: 0;
+      }
+    }
+    .drift-bottle:nth-child(1) { --x: 8%;  --dur: 21s; --delay: 0s; }
+    .drift-bottle:nth-child(2) { --x: 22%; --dur: 26s; --delay: 4s; font-size: clamp(0.95rem, 1.8vw, 1.5rem); }
+    .drift-bottle:nth-child(3) { --x: 38%; --dur: 19s; --delay: 2s; }
+    .drift-bottle:nth-child(4) { --x: 55%; --dur: 24s; --delay: 7s; }
+    .drift-bottle:nth-child(5) { --x: 71%; --dur: 22s; --delay: 1s; font-size: clamp(0.9rem, 1.7vw, 1.4rem); }
+    .drift-bottle:nth-child(6) { --x: 86%; --dur: 28s; --delay: 9s; }
+    .drift-bottle:nth-child(7) { --x: 14%; --dur: 23s; --delay: 12s; }
+    .drift-bottle:nth-child(8) { --x: 63%; --dur: 20s; --delay: 14s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .drift-bottle { animation: none; opacity: 0.12; top: 40%; }
+    }
+
     /* ===== レイアウト ===== */
-    .app { position: relative; z-index: 1; min-height: 100vh; }
+    .app { position: relative; z-index: 2; min-height: 100vh; }
 
     /* ===== ナビ ===== */
     nav {
@@ -380,11 +435,23 @@
       .social-grid { grid-template-columns: 1fr; }
       .hero-steps { flex-direction: column; align-items: center; }
       .step-card { max-width: 100%; }
+      .bottle-drift-layer .drift-bottle:nth-child(n+6) { display: none; }
     }
   </style>
 </head>
 <body>
 <div class="ocean-bg"><canvas id="oceanCanvas"></canvas></div>
+<!-- ボトルが遠くから流れ、画面下（岸）へ流れ着く装飾 -->
+<div class="bottle-drift-layer" aria-hidden="true">
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+  <span class="drift-bottle">🍾</span>
+</div>
 <div class="app">
   <nav>
     <div class="nav-logo">🌊 Bottle<span>Mail</span></div>
