@@ -316,6 +316,17 @@ app.post("/api/bottles/:bottleId/open", async (req, res) => {
   }
 });
 
+// 同じユーザー2人のペアに対応する bottles 行は2件（送信方向が逆）ある。
+// メッセージはどちらか一方の bottle_id に紐づくため、スレッド表示では両方の id を束ねる。
+async function getBottleIdsForPair(supabase, senderId, recipientId) {
+  const [{ data: rowsAB }, { data: rowsBA }] = await Promise.all([
+    supabase.from("bottles").select("id").eq("sender_id", senderId).eq("recipient_id", recipientId),
+    supabase.from("bottles").select("id").eq("sender_id", recipientId).eq("recipient_id", senderId)
+  ]);
+  const ids = [...new Set([...(rowsAB || []), ...(rowsBA || [])].map((r) => r.id))];
+  return ids;
+}
+
 // メッセージ送信（ボトルに返信 or チャット続行）
 app.post("/api/messages", async (req, res) => {
   try {
@@ -326,6 +337,20 @@ app.post("/api/messages", async (req, res) => {
     const { bottle_id, content } = req.body;
     if (!bottle_id || !content?.trim()) {
       return res.status(400).json({ error: "bottle_id と content は必須です" });
+    }
+    if (!userId) return res.status(401).json({ error: "x-user-id ヘッダーが必要です" });
+
+    const { data: bottleRow, error: bottleErr } = await supabase
+      .from("bottles")
+      .select("sender_id, recipient_id")
+      .eq("id", bottle_id)
+      .single();
+
+    if (bottleErr || !bottleRow) {
+      return res.status(404).json({ error: "ボトルが見つかりません" });
+    }
+    if (bottleRow.sender_id !== userId && bottleRow.recipient_id !== userId) {
+      return res.status(403).json({ error: "このボトルにメッセージを送る権限がありません" });
     }
 
     // ボトルをreplied状態に
@@ -362,18 +387,39 @@ app.post("/api/messages", async (req, res) => {
   }
 });
 
-// チャット履歴取得
+// チャット履歴取得（マッチ時の双方向ボトル行で共有された1スレッドとして返す）
 app.get("/api/messages/:bottleId", async (req, res) => {
   try {
     const supabase = getSupabase();
     if (!supabase) return res.status(400).json({ error: "Supabase設定が未完了です" });
 
+    const userId = req.headers["x-user-id"];
+    if (!userId) return res.status(401).json({ error: "x-user-id ヘッダーが必要です" });
+
     const { bottleId } = req.params;
+
+    const { data: bottleRow, error: bottleErr } = await supabase
+      .from("bottles")
+      .select("sender_id, recipient_id")
+      .eq("id", bottleId)
+      .single();
+
+    if (bottleErr || !bottleRow) {
+      return res.status(404).json({ error: "ボトルが見つかりません" });
+    }
+    if (bottleRow.sender_id !== userId && bottleRow.recipient_id !== userId) {
+      return res.status(403).json({ error: "このチャットを表示する権限がありません" });
+    }
+
+    const pairIds = await getBottleIdsForPair(supabase, bottleRow.sender_id, bottleRow.recipient_id);
+    if (!pairIds.length) {
+      return res.json({ messages: [] });
+    }
 
     const { data, error } = await supabase
       .from("bottle_messages")
       .select("*, sender:sender_id(id, character_name)")
-      .eq("bottle_id", bottleId)
+      .in("bottle_id", pairIds)
       .order("created_at", { ascending: true });
 
     if (error) throw new Error(error.message);

@@ -178,8 +178,8 @@ server.tool(
     email: z.string().optional().describe("メールアドレス（省略時は環境変数 BOTTLE_MAIL_EMAIL を使用）")
   },
   async ({ bottle_id, email }) => {
-    await getMyUserId(email); // 認証確認
-    const data = await apiGet(`/api/messages/${bottle_id}`);
+    const { id } = await getMyUserId(email);
+    const data = await apiGet(`/api/messages/${bottle_id}`, id);
     const messages = data.messages || [];
     if (!messages.length) {
       return { content: [{ type: "text", text: "まだメッセージはありません。" }] };
