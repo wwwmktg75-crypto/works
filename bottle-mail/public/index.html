@@ -73,6 +73,15 @@
     .btn-amber:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(231,111,81,.5); }
     .btn-lg { padding: 14px 36px; font-size: 1rem; }
 
+    /* 言語切替 */
+    .btn-lang {
+      padding: 6px 14px; border-radius: 100px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+      color: var(--text-dim); cursor: pointer; font-size: .8rem; font-weight: 700;
+      transition: all .2s; letter-spacing: .04em;
+    }
+    .btn-lang:hover { background: rgba(255,255,255,.12); color: var(--text); }
+
     /* ===== ビュー管理 ===== */
     .view { display: none; }
     .view.active { display: block; }
@@ -209,6 +218,16 @@
     }
     .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: .5; }
 
+    /* ===== タブ ===== */
+    .dash-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(0,0,0,.2); border-radius: 12px; padding: 4px; }
+    .dash-tab {
+      flex: 1; padding: 10px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text-dim); cursor: pointer;
+      font-size: .88rem; font-weight: 600; transition: all .2s; font-family: inherit;
+    }
+    .dash-tab.active { background: var(--card-bg); color: var(--text); }
+    .dash-tab:hover:not(.active) { color: var(--text); }
+
     /* ===== ボトルカード ===== */
     .bottle-list { display: flex; flex-direction: column; gap: 14px; }
     .bottle-card {
@@ -319,6 +338,21 @@
       transition: all .2s; flex-shrink: 0;
     }
     .btn-send:hover { transform: scale(1.08); }
+    .btn-send:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .btn-wave {
+      width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15);
+      background: transparent; font-size: 1.2rem; cursor: pointer; flex-shrink: 0;
+      transition: all .2s; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-wave:hover { background: rgba(255,255,255,.08); transform: scale(1.1) rotate(-10deg); }
+    .btn-wave.waved { animation: wave-anim .5s ease; }
+    @keyframes wave-anim {
+      0%   { transform: rotate(0deg); }
+      25%  { transform: rotate(20deg) scale(1.2); }
+      50%  { transform: rotate(-10deg) scale(1.2); }
+      75%  { transform: rotate(15deg); }
+      100% { transform: rotate(0deg); }
+    }
 
     /* ===== プロフィールバー ===== */
     .profile-bar {
@@ -355,70 +389,71 @@
   <nav>
     <div class="nav-logo">🌊 Bottle<span>Mail</span></div>
     <div class="nav-actions" id="navActions">
-      <button class="btn btn-ghost" onclick="showView('view-register')">登録する</button>
-      <button class="btn btn-primary" onclick="showView('view-login')">ログイン</button>
+      <button class="btn-lang" id="langToggle" onclick="toggleLang()">EN</button>
+      <button class="btn btn-ghost" onclick="showView('view-register')" data-i18n="nav.register">登録する</button>
+      <button class="btn btn-primary" onclick="showView('view-login')" data-i18n="nav.login">ログイン</button>
     </div>
   </nav>
 
   <!-- ヒーロー -->
   <div id="view-hero" class="view active">
     <div class="hero-bottle">🍾</div>
-    <h1 class="hero-title">あなたの<span class="accent">作品</span>が、<br>誰かへの<span class="accent">ボトルメール</span>になる</h1>
-    <p class="hero-sub">プロジェクトやSNSをAIが分析。あなたに似た誰かへ、自動でメッセージを届けます。</p>
+    <h1 class="hero-title" data-i18n-html="hero.title">あなたの<span class="accent">作品</span>が、<br>誰かへの<span class="accent">ボトルメール</span>になる</h1>
+    <p class="hero-sub" data-i18n="hero.sub">プロジェクトやSNSをAIが分析。あなたに似た誰かへ、自動でメッセージを届けます。</p>
     <div class="hero-steps">
       <div class="step-card">
         <div class="step-icon">🔗</div>
         <div class="step-label">STEP 1</div>
-        <div class="step-text">作ったもののURLを入れる</div>
+        <div class="step-text" data-i18n="hero.step1">作ったもののURLを入れる</div>
       </div>
       <div class="step-card">
         <div class="step-icon">🤖</div>
         <div class="step-label">STEP 2</div>
-        <div class="step-text">AIがあなたの個性を読み取る</div>
+        <div class="step-text" data-i18n="hero.step2">AIがあなたの個性を読み取る</div>
       </div>
       <div class="step-card">
         <div class="step-icon">🍾</div>
         <div class="step-label">STEP 3</div>
-        <div class="step-text">相性の良い人へボトルが届く</div>
+        <div class="step-text" data-i18n="hero.step3">相性の良い人へボトルが届く</div>
       </div>
       <div class="step-card">
         <div class="step-icon">💬</div>
         <div class="step-label">STEP 4</div>
-        <div class="step-text">気に入ったら返信してつながる</div>
+        <div class="step-text" data-i18n="hero.step4">気に入ったら返信してつながる</div>
       </div>
     </div>
-    <button class="btn btn-amber btn-lg" onclick="showView('view-register')">ボトルを流してみる</button>
+    <button class="btn btn-amber btn-lg" onclick="showView('view-register')" data-i18n="hero.cta">ボトルを流してみる</button>
   </div>
 
   <!-- 登録フォーム -->
   <div id="view-register" class="view">
     <div class="form-card">
-      <div class="form-title">🔗 プロジェクト情報を入力</div>
-      <div class="form-sub">作ったアプリ・サイト・GitHubなどのURLを入れてください。<br>AIがあなたの個性を分析します。</div>
+      <div class="form-title" data-i18n="reg.title">🔗 プロジェクト情報を入力</div>
+      <div class="form-sub" data-i18n="reg.sub">作ったアプリ・サイト・GitHubなどのURLを入れてください。<br>AIがあなたの個性を分析します。</div>
 
       <div class="field">
-        <label>メールアドレス（通知に使用）</label>
-        <input type="email" id="emailInput" placeholder="you@example.com">
+        <label data-i18n="reg.email.label">メールアドレス（通知に使用）</label>
+        <input type="email" id="emailInput" data-i18n-placeholder="reg.email.placeholder" placeholder="you@example.com">
       </div>
 
       <div class="field">
-        <label>プロジェクト / アプリのURL <span style="color:var(--amber-glow)">*</span></label>
+        <label><span data-i18n="reg.url.label">プロジェクト / アプリのURL</span> <span style="color:var(--amber-glow)">*</span></label>
         <div class="url-list" id="urlList">
           <div class="url-row">
-            <input type="url" placeholder="https://yourproject.com" class="project-url">
+            <input type="url" data-i18n-placeholder="reg.url.placeholder" placeholder="https://yourproject.com" class="project-url">
             <button class="btn-icon" onclick="removeUrl(this)" title="削除">✕</button>
           </div>
         </div>
-        <button class="btn-add" onclick="addUrl()">＋ URLを追加</button>
+        <button class="btn-add" id="btnAddUrl" onclick="addUrl()">＋ <span data-i18n="reg.url.add">URLを追加</span></button>
       </div>
 
       <button class="btn btn-primary btn-lg" style="width:100%;margin-bottom:12px" onclick="startAnalyze()">
-        AIで分析する →
+        <span data-i18n="reg.analyze">AIで分析する →</span>
       </button>
 
       <details class="field" style="margin-bottom:0">
         <summary style="cursor:pointer;font-size:.85rem;color:var(--text-dim);font-weight:600;list-style:none;padding:10px 0;user-select:none">
-          ＋ SNSリンクも追加する（任意）
+          <span data-i18n="reg.sns.toggle">＋ SNSリンクも追加する（任意）</span>
         </summary>
         <div class="social-grid" style="margin-top:12px">
           <input type="url" id="twitterInput" placeholder="X (Twitter) URL">
@@ -433,31 +468,31 @@
   <!-- AI分析中 -->
   <div id="view-analyzing" class="view">
     <div class="analyze-orb">🤖</div>
-    <h2 style="font-size:1.4rem">AIが分析中...</h2>
-    <div class="analyze-status" id="analyzeStatus">URLを読み込んでいます</div>
+    <h2 style="font-size:1.4rem" data-i18n="analyzing.title">AIが分析中...</h2>
+    <div class="analyze-status" id="analyzeStatus" data-i18n="analyzing.s0">URLを読み込んでいます</div>
   </div>
 
   <!-- 名前確認 -->
   <div id="view-name" class="view">
     <div class="form-card">
-      <div class="form-title">✨ あなたのキャラクター名</div>
+      <div class="form-title" data-i18n="name.title">✨ あなたのキャラクター名</div>
       <div class="form-sub" id="personalitySummaryText"></div>
 
       <div id="tagsContainer" class="tags"></div>
 
       <div class="field" style="margin-top:20px">
-        <label>AIが提案した名前（クリックで選択）</label>
+        <label data-i18n="name.ai.label">AIが提案した名前（クリックで選択）</label>
         <div class="name-candidates" id="nameCandidates"></div>
       </div>
 
-      <div class="divider">— または自分で決める —</div>
+      <div class="divider" data-i18n="name.divider">— または自分で決める —</div>
 
       <div class="field">
-        <label>オリジナル名</label>
-        <input type="text" id="customNameInput" placeholder="好きな名前を入力...">
+        <label data-i18n="name.custom.label">オリジナル名</label>
+        <input type="text" id="customNameInput" data-i18n-placeholder="name.custom.placeholder" placeholder="好きな名前を入力...">
       </div>
 
-      <button class="btn btn-amber btn-lg" style="width:100%" onclick="registerUser()">
+      <button class="btn btn-amber btn-lg" style="width:100%" onclick="registerUser()" data-i18n="name.cta">
         🍾 ボトルを流す
       </button>
     </div>
@@ -467,8 +502,8 @@
   <div id="view-complete" class="view">
     <div class="form-card" style="text-align:center">
       <div style="font-size:4rem;margin-bottom:16px">🌊</div>
-      <h2 style="font-size:1.5rem;margin-bottom:12px">ボトルが海に流れました</h2>
-      <p style="color:var(--text-dim);line-height:1.8;margin-bottom:28px">
+      <h2 style="font-size:1.5rem;margin-bottom:12px" data-i18n="complete.title">ボトルが海に流れました</h2>
+      <p style="color:var(--text-dim);line-height:1.8;margin-bottom:28px" data-i18n-html="complete.body">
         AIが相性の良い人を探しています。<br>
         マッチした人のボトルが届いたら通知します。
       </p>
@@ -479,7 +514,7 @@
           <div class="sub" id="completeSubText"></div>
         </div>
       </div>
-      <button class="btn btn-primary btn-lg" style="width:100%" onclick="loadDashboard()">
+      <button class="btn btn-primary btn-lg" style="width:100%" onclick="loadDashboard()" data-i18n="complete.cta">
         受信ボックスを見る
       </button>
     </div>
@@ -488,39 +523,43 @@
   <!-- ログイン -->
   <div id="view-login" class="view">
     <div class="form-card">
-      <div class="form-title">🔑 ログイン</div>
-      <div class="form-sub">登録済みのユーザーIDを入力してください。</div>
+      <div class="form-title" data-i18n="login.title">🔑 ログイン</div>
+      <div class="form-sub" data-i18n="login.sub">登録時のメールアドレスを入力してください。</div>
       <div class="field">
-        <label>ユーザーID</label>
-        <input type="text" id="loginIdInput" placeholder="xxxx-xxxx-xxxx-xxxx">
+        <label data-i18n="login.email.label">メールアドレス</label>
+        <input type="email" id="loginEmailInput" data-i18n-placeholder="reg.email.placeholder" placeholder="you@example.com">
       </div>
-      <button class="btn btn-primary btn-lg" style="width:100%" onclick="loginUser()">ログイン</button>
+      <button class="btn btn-primary btn-lg" style="width:100%" onclick="loginUser()" data-i18n="login.cta">ログイン</button>
     </div>
   </div>
 
   <!-- ダッシュボード -->
   <div id="view-dashboard" class="view">
     <div class="dash-header">
-      <div class="dash-title">
-        📬 受信ボックス
+      <div class="dash-title" id="dashTitle">
+        📬 <span data-i18n="dash.inbox.title">受信ボックス</span>
         <span class="badge" id="unreadBadge" style="display:none">0</span>
       </div>
-      <button class="btn btn-ghost" onclick="loadDashboard()">更新</button>
+      <button class="btn btn-ghost" onclick="loadDashboard()" data-i18n="dash.refresh">更新</button>
     </div>
     <div id="profileBarContainer"></div>
+    <div class="dash-tabs">
+      <button class="dash-tab active" id="tabInbox" onclick="switchTab('inbox')" data-i18n="tab.inbox">📬 受信</button>
+      <button class="dash-tab" id="tabSent" onclick="switchTab('sent')" data-i18n="tab.sent">🍾 送信済み</button>
+    </div>
     <div id="bottleListContainer">
       <div class="empty-state">
         <div class="empty-icon">🌊</div>
-        <div>読み込み中...</div>
+        <div data-i18n="loading">読み込み中...</div>
       </div>
     </div>
   </div>
 
   <!-- ボトル詳細 -->
   <div id="view-bottle" class="view">
-    <button class="back-btn" onclick="showView('view-dashboard')">← 戻る</button>
+    <button class="back-btn" onclick="showView('view-dashboard')">← <span data-i18n="back">戻る</span></button>
     <div id="bottleDetailContent"></div>
-    <button class="btn btn-amber btn-lg" style="width:100%" id="openChatBtn" onclick="openChat()">
+    <button class="btn btn-amber btn-lg" style="width:100%" id="openChatBtn" onclick="openChat()" data-i18n="bottle.chat">
       💬 メッセージを送る
     </button>
   </div>
@@ -528,15 +567,16 @@
   <!-- チャット -->
   <div id="view-chat" class="view">
     <div class="chat-header">
-      <button class="back-btn" style="margin-bottom:0" onclick="showView('view-bottle')">← 戻る</button>
+      <button class="back-btn" style="margin-bottom:0" onclick="showView('view-bottle')">← <span data-i18n="back">戻る</span></button>
       <div class="chat-title" id="chatTitle"></div>
       <div class="chat-sub" id="chatSub"></div>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
       <div class="chat-input-row">
-        <input type="text" id="chatInput" placeholder="メッセージを入力..." onkeydown="if(event.key==='Enter')sendMessage()">
-        <button class="btn-send" onclick="sendMessage()">➤</button>
+        <button class="btn-wave" id="waveBtn" onclick="sendWave()" data-i18n-title="chat.wave.title" title="手を振る">👋</button>
+        <input type="text" id="chatInput" data-i18n-placeholder="chat.placeholder" placeholder="メッセージを入力...">
+        <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
       </div>
     </div>
   </div>
@@ -545,6 +585,201 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== i18n =====
+const MESSAGES = {
+  ja: {
+    "nav.register":           "登録する",
+    "nav.login":              "ログイン",
+    "nav.inbox":              "📬 受信ボックス",
+    "nav.logout":             "ログアウト",
+    "hero.title":             'あなたの<span class="accent">作品</span>が、<br>誰かへの<span class="accent">ボトルメール</span>になる',
+    "hero.sub":               "プロジェクトやSNSをAIが分析。あなたに似た誰かへ、自動でメッセージを届けます。",
+    "hero.step1":             "作ったもののURLを入れる",
+    "hero.step2":             "AIがあなたの個性を読み取る",
+    "hero.step3":             "相性の良い人へボトルが届く",
+    "hero.step4":             "気に入ったら返信してつながる",
+    "hero.cta":               "ボトルを流してみる",
+    "reg.title":              "🔗 プロジェクト情報を入力",
+    "reg.sub":                "作ったアプリ・サイト・GitHubなどのURLを入れてください。<br>AIがあなたの個性を分析します。",
+    "reg.email.label":        "メールアドレス（通知に使用）",
+    "reg.email.placeholder":  "you@example.com",
+    "reg.url.label":          "プロジェクト / アプリのURL",
+    "reg.url.placeholder":    "https://yourproject.com",
+    "reg.url.add":            "URLを追加",
+    "reg.analyze":            "AIで分析する →",
+    "reg.sns.toggle":         "＋ SNSリンクも追加する（任意）",
+    "analyzing.title":        "AIが分析中...",
+    "analyzing.s0":           "URLを読み込んでいます",
+    "analyzing.s1":           "AIが個性を分析中...",
+    "analyzing.s2":           "名前を考えています...",
+    "name.title":             "✨ あなたのキャラクター名",
+    "name.ai.label":          "AIが提案した名前（クリックで選択）",
+    "name.divider":           "— または自分で決める —",
+    "name.custom.label":      "オリジナル名",
+    "name.custom.placeholder":"好きな名前を入力...",
+    "name.cta":               "🍾 ボトルを流す",
+    "complete.title":         "ボトルが海に流れました",
+    "complete.body":          "AIが相性の良い人を探しています。<br>マッチした人のボトルが届いたら通知します。",
+    "complete.cta":           "受信ボックスを見る",
+    "login.title":            "🔑 ログイン",
+    "login.sub":              "登録時のメールアドレスを入力してください。",
+    "login.email.label":      "メールアドレス",
+    "login.cta":              "ログイン",
+    "dash.inbox.title":       "受信ボックス",
+    "dash.refresh":           "更新",
+    "tab.inbox":              "📬 受信",
+    "tab.sent":               "🍾 送信済み",
+    "back":                   "戻る",
+    "bottle.chat":            "💬 メッセージを送る",
+    "bottle.chat.continue":   "💬 チャットを続ける",
+    "chat.wave.title":        "手を振る",
+    "chat.placeholder":       "メッセージを入力...",
+    "chat.matched":           "マッチしました",
+    "chat.empty":             "最初のメッセージを送ってみましょう 🍾",
+    "loading":                "読み込み中...",
+    "score.label":            "マッチ度",
+    "match.badge":            "✨ マッチ度",
+    "match.pts":              "点",
+    "section.personality":    "個性",
+    "section.match.reason":   "マッチした理由",
+    "match.reason.fallback":  "AIがあなたたちの相性を感じました",
+    "empty.inbox":            "まだボトルが届いていません",
+    "empty.inbox.sub":        "AIがマッチング中です。しばらくお待ちください。",
+    "empty.sent":             "まだボトルを送っていません",
+    "empty.sent.sub":         "登録するとAIが自動でマッチングします",
+    "status.unread":          "未開封",
+    "status.opened":          "開封済み",
+    "status.replied":         "返信あり",
+    "load.failed":            "読み込みに失敗しました",
+    "send.failed":            "送信に失敗しました",
+    "err.email":              "メールアドレスを入力してください",
+    "err.url":                "URLを1つ以上入力してください",
+    "err.name":               "名前を選択または入力してください",
+    "err.analysis":           "分析に失敗しました",
+    "err.register":           "登録に失敗しました",
+    "err.login":              "ログインに失敗しました",
+    "time.now":               "たった今",
+    "time.min":               "分前",
+    "time.hour":              "時間前",
+    "time.day":               "日前",
+  },
+  en: {
+    "nav.register":           "Sign up",
+    "nav.login":              "Log in",
+    "nav.inbox":              "📬 Inbox",
+    "nav.logout":             "Log out",
+    "hero.title":             'Your <span class="accent">projects</span><br>become a <span class="accent">bottle message</span> to someone',
+    "hero.sub":               "AI analyzes your projects and SNS links, then automatically finds and connects you with like-minded people.",
+    "hero.step1":             "Enter URLs of things you built",
+    "hero.step2":             "AI reads your personality",
+    "hero.step3":             "Your bottle reaches someone compatible",
+    "hero.step4":             "Reply and connect if you like them",
+    "hero.cta":               "Cast your bottle",
+    "reg.title":              "🔗 Enter your project info",
+    "reg.sub":                "Paste URLs of apps, sites, or GitHub repos you've built.<br>AI will analyze your personality from them.",
+    "reg.email.label":        "Email address (for notifications)",
+    "reg.email.placeholder":  "you@example.com",
+    "reg.url.label":          "Project / App URL",
+    "reg.url.placeholder":    "https://yourproject.com",
+    "reg.url.add":            "Add URL",
+    "reg.analyze":            "Analyze with AI →",
+    "reg.sns.toggle":         "+ Add SNS links (optional)",
+    "analyzing.title":        "AI is analyzing...",
+    "analyzing.s0":           "Reading your URLs...",
+    "analyzing.s1":           "Analyzing your personality...",
+    "analyzing.s2":           "Generating name suggestions...",
+    "name.title":             "✨ Your Character Name",
+    "name.ai.label":          "AI suggested names (click to select)",
+    "name.divider":           "— or choose your own —",
+    "name.custom.label":      "Custom name",
+    "name.custom.placeholder":"Type a name you like...",
+    "name.cta":               "🍾 Cast your bottle",
+    "complete.title":         "Your bottle is in the sea",
+    "complete.body":          "AI is searching for people with matching personalities.<br>You'll be notified when a bottle arrives.",
+    "complete.cta":           "View Inbox",
+    "login.title":            "🔑 Log in",
+    "login.sub":              "Enter the email address you registered with.",
+    "login.email.label":      "Email address",
+    "login.cta":              "Log in",
+    "dash.inbox.title":       "Inbox",
+    "dash.refresh":           "Refresh",
+    "tab.inbox":              "📬 Received",
+    "tab.sent":               "🍾 Sent",
+    "back":                   "Back",
+    "bottle.chat":            "💬 Send a message",
+    "bottle.chat.continue":   "💬 Continue chat",
+    "chat.wave.title":        "Wave hello",
+    "chat.placeholder":       "Type a message...",
+    "chat.matched":           "Matched!",
+    "chat.empty":             "Send your first message 🍾",
+    "loading":                "Loading...",
+    "score.label":            "Match",
+    "match.badge":            "✨ Match",
+    "match.pts":              "pts",
+    "section.personality":    "Personality",
+    "section.match.reason":   "Why you matched",
+    "match.reason.fallback":  "AI sensed a strong compatibility between you",
+    "empty.inbox":            "No bottles yet",
+    "empty.inbox.sub":        "AI is matching. Please wait a moment.",
+    "empty.sent":             "You haven't sent any bottles yet",
+    "empty.sent.sub":         "AI will automatically match you after registration",
+    "status.unread":          "Unread",
+    "status.opened":          "Opened",
+    "status.replied":         "Replied",
+    "load.failed":            "Failed to load",
+    "send.failed":            "Failed to send",
+    "err.email":              "Please enter your email address",
+    "err.url":                "Please enter at least one URL",
+    "err.name":               "Please select or enter a name",
+    "err.analysis":           "Analysis failed",
+    "err.register":           "Registration failed",
+    "err.login":              "Login failed",
+    "time.now":               "just now",
+    "time.min":               "m ago",
+    "time.hour":              "h ago",
+    "time.day":               "d ago",
+  }
+};
+
+let currentLang = localStorage.getItem("bottleLang") ||
+  (navigator.language.startsWith("ja") ? "ja" : "en");
+
+function t(key) {
+  return MESSAGES[currentLang][key] || MESSAGES["ja"][key] || key;
+}
+
+function applyLang() {
+  document.documentElement.lang = currentLang;
+  document.getElementById("langToggle").textContent = currentLang === "ja" ? "EN" : "JA";
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const key = el.getAttribute("data-i18n-html");
+    el.innerHTML = t(key);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    el.placeholder = t(key);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    const key = el.getAttribute("data-i18n-title");
+    el.title = t(key);
+  });
+  // URL 追加ボタンのプレースホルダーを更新
+  document.querySelectorAll(".project-url").forEach(el => {
+    el.placeholder = t("reg.url.placeholder");
+  });
+}
+
+function toggleLang() {
+  currentLang = currentLang === "ja" ? "en" : "ja";
+  localStorage.setItem("bottleLang", currentLang);
+  applyLang();
+}
+
 // ===== 設定 =====
 const API = "";  // 同一オリジン
 
@@ -559,6 +794,7 @@ let state = {
 
 // ===== 初期化 =====
 window.addEventListener("load", () => {
+  applyLang();
   initOcean();
   if (state.userId) {
     updateNavLoggedIn();
@@ -568,8 +804,9 @@ window.addEventListener("load", () => {
 
 function updateNavLoggedIn() {
   document.getElementById("navActions").innerHTML = `
-    <button class="btn btn-ghost" onclick="loadDashboard()">📬 受信ボックス</button>
-    <button class="btn btn-ghost" onclick="logout()">ログアウト</button>
+    <button class="btn-lang" onclick="toggleLang()">${currentLang === "ja" ? "EN" : "JA"}</button>
+    <button class="btn btn-ghost" onclick="loadDashboard()">${t("nav.inbox")}</button>
+    <button class="btn btn-ghost" onclick="logout()">${t("nav.logout")}</button>
   `;
 }
 
@@ -577,8 +814,9 @@ function logout() {
   localStorage.removeItem("bottleUserId");
   state.userId = null;
   document.getElementById("navActions").innerHTML = `
-    <button class="btn btn-ghost" onclick="showView('view-register')">登録する</button>
-    <button class="btn btn-primary" onclick="showView('view-login')">ログイン</button>
+    <button class="btn-lang" id="langToggle" onclick="toggleLang()">${currentLang === "ja" ? "EN" : "JA"}</button>
+    <button class="btn btn-ghost" onclick="showView('view-register')" data-i18n="nav.register">${t("nav.register")}</button>
+    <button class="btn btn-primary" onclick="showView('view-login')" data-i18n="nav.login">${t("nav.login")}</button>
   `;
   showView("view-hero");
 }
@@ -595,7 +833,7 @@ function addUrl() {
   const list = document.getElementById("urlList");
   const row = document.createElement("div");
   row.className = "url-row";
-  row.innerHTML = `<input type="url" placeholder="https://..." class="project-url"><button class="btn-icon" onclick="removeUrl(this)">✕</button>`;
+  row.innerHTML = `<input type="url" placeholder="${t("reg.url.placeholder")}" class="project-url"><button class="btn-icon" onclick="removeUrl(this)">✕</button>`;
   list.appendChild(row);
 }
 
@@ -611,8 +849,8 @@ async function startAnalyze() {
   const urls = [...document.querySelectorAll(".project-url")]
     .map(i => i.value.trim()).filter(Boolean);
 
-  if (!email) return toast("メールアドレスを入力してください");
-  if (!urls.length) return toast("URLを1つ以上入力してください");
+  if (!email) return toast(t("err.email"));
+  if (!urls.length) return toast(t("err.url"));
 
   const social_links = {
     twitter:   document.getElementById("twitterInput").value.trim() || null,
@@ -625,7 +863,7 @@ async function startAnalyze() {
 
   showView("view-analyzing");
 
-  const steps = ["URLを読み込んでいます", "AIが個性を分析中...", "名前を考えています..."];
+  const steps = [t("analyzing.s0"), t("analyzing.s1"), t("analyzing.s2")];
   let si = 0;
   const interval = setInterval(() => {
     si = (si + 1) % steps.length;
@@ -641,7 +879,6 @@ async function startAnalyze() {
     const data = await res.json();
     clearInterval(interval);
 
-    // APIキー未設定時はデモ用モックデータで続行
     if (!res.ok) {
       if (data.error?.includes("ANTHROPIC_API_KEY")) {
         const mock = mockAnalysis(urls[0]);
@@ -649,20 +886,31 @@ async function startAnalyze() {
         showNameView(mock);
         return;
       }
-      throw new Error(data.error || "分析に失敗しました");
+      throw new Error(data.error || t("err.analysis"));
     }
 
     state.analysis = data;
     showNameView(data);
   } catch (err) {
     clearInterval(interval);
-    toast(`エラー: ${err.message}`);
+    toast(`Error: ${err.message}`);
     showView("view-register");
   }
 }
 
 function mockAnalysis(url) {
   const domain = url.replace(/https?:\/\//, "").split("/")[0];
+  if (currentLang === "en") {
+    return {
+      personality_summary: `The creator of ${domain} blends careful attention to detail with bold ideas. You move fluidly across the boundary between technology and aesthetics, always putting user experience first.`,
+      personality_tags: ["maker", "design thinking", "perfectionist", "open-minded", "night owl"],
+      name_suggestions: [
+        { name: "Architect of the Deep", reason: "Your meticulous craftsmanship goes all the way down" },
+        { name: "Code at 4am", reason: "Quietly, but surely changing the world" },
+        { name: "Builder of Bright Margins", reason: "A distinct aesthetic in how you use space and whitespace" }
+      ]
+    };
+  }
   return {
     personality_summary: `${domain} を作り上げたあなたは、細部への気配りと大胆なアイデアを兼ね備えた創り手。技術と美学の境界線を軽やかに越え、ユーザーの体験を第一に考える。`,
     personality_tags: ["ものづくり", "デザイン思考", "こだわり派", "オープンマインド", "夜型クリエイター"],
@@ -680,7 +928,7 @@ function showNameView(analysis) {
 
   const tagsEl = document.getElementById("tagsContainer");
   tagsEl.innerHTML = (analysis.personality_tags || [])
-    .map(t => `<span class="tag">${t}</span>`).join("");
+    .map(tag => `<span class="tag">${tag}</span>`).join("");
 
   const candidates = document.getElementById("nameCandidates");
   candidates.innerHTML = (analysis.name_suggestions || []).map(s => `
@@ -704,7 +952,7 @@ function selectName(el, name) {
 async function registerUser() {
   const customName = document.getElementById("customNameInput").value.trim();
   const name = customName || state.selectedName;
-  if (!name) return toast("名前を選択または入力してください");
+  if (!name) return toast(t("err.name"));
 
   const body = {
     ...state.registerData,
@@ -720,7 +968,7 @@ async function registerUser() {
       body: JSON.stringify(body)
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "登録に失敗しました");
+    if (!res.ok) throw new Error(data.error || t("err.register"));
 
     state.userId = data.user.id;
     localStorage.setItem("bottleUserId", state.userId);
@@ -732,44 +980,61 @@ async function registerUser() {
 
     showView("view-complete");
   } catch (err) {
-    toast(`エラー: ${err.message}`);
+    toast(`Error: ${err.message}`);
   }
 }
 
 // ===== ログイン =====
 async function loginUser() {
-  const id = document.getElementById("loginIdInput").value.trim();
-  if (!id) return toast("ユーザーIDを入力してください");
+  const email = document.getElementById("loginEmailInput").value.trim();
+  if (!email) return toast(t("err.email"));
 
   try {
-    const res = await fetch(`${API}/api/users/me`, {
-      headers: { "x-user-id": id }
+    const res = await fetch(`${API}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
     });
-    if (!res.ok) throw new Error("ユーザーが見つかりません");
-    state.userId = id;
-    localStorage.setItem("bottleUserId", id);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || t("err.login"));
+    state.userId = data.user.id;
+    localStorage.setItem("bottleUserId", state.userId);
     updateNavLoggedIn();
     loadDashboard();
   } catch (err) {
-    toast(`エラー: ${err.message}`);
+    toast(`Error: ${err.message}`);
   }
 }
 
 // ===== ダッシュボード =====
+let currentTab = "inbox";
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById("tabInbox").classList.toggle("active", tab === "inbox");
+  document.getElementById("tabSent").classList.toggle("active", tab === "sent");
+  renderBottles();
+}
+
+let dashData = { inbox: [], sent: [] };
+
 async function loadDashboard() {
   showView("view-dashboard");
   if (!state.userId) { showView("view-hero"); return; }
 
   try {
-    const [userRes, bottleRes] = await Promise.all([
-      fetch(`${API}/api/users/me`, { headers: { "x-user-id": state.userId } }),
-      fetch(`${API}/api/bottles`,  { headers: { "x-user-id": state.userId } })
+    const [userRes, inboxRes, sentRes] = await Promise.all([
+      fetch(`${API}/api/users/me`,       { headers: { "x-user-id": state.userId } }),
+      fetch(`${API}/api/bottles`,        { headers: { "x-user-id": state.userId } }),
+      fetch(`${API}/api/bottles/sent`,   { headers: { "x-user-id": state.userId } })
     ]);
 
-    const { user }    = await userRes.json();
-    const { bottles } = await bottleRes.json();
+    const { user }          = await userRes.json();
+    const { bottles: inbox } = await inboxRes.json();
+    const { bottles: sent }  = await sentRes.json();
 
-    // プロフィールバー
+    dashData = { inbox: inbox || [], sent: sent || [] };
+
     document.getElementById("profileBarContainer").innerHTML = user ? `
       <div class="profile-bar">
         <div class="avatar">🍾</div>
@@ -780,44 +1045,60 @@ async function loadDashboard() {
       </div>
     ` : "";
 
-    const unread = (bottles || []).filter(b => b.status === "unread").length;
+    const unread = dashData.inbox.filter(b => b.status === "unread").length;
     const badge = document.getElementById("unreadBadge");
     if (unread > 0) { badge.textContent = unread; badge.style.display = ""; }
     else badge.style.display = "none";
 
-    if (!bottles?.length) {
-      document.getElementById("bottleListContainer").innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🌊</div>
-          <div>まだボトルが届いていません</div>
-          <div style="font-size:.85rem;color:var(--text-dim);margin-top:8px">AIがマッチング中です。しばらくお待ちください。</div>
-        </div>`;
-      return;
-    }
-
+    renderBottles();
+  } catch (err) {
     document.getElementById("bottleListContainer").innerHTML = `
-      <div class="bottle-list">
-        ${bottles.map(b => `
-          <div class="bottle-card ${b.status === 'unread' ? 'unread' : ''}" onclick="openBottle('${b.id}')">
-            <div class="bottle-icon">🍾</div>
+      <div class="empty-state"><div>${t("load.failed")}</div></div>`;
+  }
+}
+
+function renderBottles() {
+  const isInbox = currentTab === "inbox";
+  const bottles = isInbox ? dashData.inbox : dashData.sent;
+
+  if (!bottles.length) {
+    document.getElementById("bottleListContainer").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🌊</div>
+        <div>${isInbox ? t("empty.inbox") : t("empty.sent")}</div>
+        <div style="font-size:.85rem;color:var(--text-dim);margin-top:8px">${isInbox ? t("empty.inbox.sub") : t("empty.sent.sub")}</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById("bottleListContainer").innerHTML = `
+    <div class="bottle-list">
+      ${bottles.map(b => {
+        const person = isInbox ? b.sender : b.recipient;
+        const isUnread = isInbox && b.status === "unread";
+        const statusIcon = !isInbox
+          ? (b.status === "replied" ? "💬" : b.status === "opened" ? "👁" : "🍾")
+          : "";
+        const statusLabel = !isInbox
+          ? (b.status === "replied" ? t("status.replied") : b.status === "opened" ? t("status.opened") : t("status.unread"))
+          : "";
+        return `
+          <div class="bottle-card ${isUnread ? 'unread' : ''}" ${isInbox ? `onclick="openBottle('${b.id}')"` : ''} style="${!isInbox ? 'cursor:default' : ''}">
+            <div class="bottle-icon">${statusIcon || "🍾"}</div>
             <div class="bottle-info">
               <div class="bottle-sender">
-                ${b.status === 'unread' ? '<span class="status-dot"></span>' : ''}
-                ${b.sender?.character_name || "??"}
+                ${isUnread ? '<span class="status-dot"></span>' : ''}
+                ${person?.character_name || "???"}
               </div>
-              <div class="bottle-meta">${(b.sender?.personality_tags || []).slice(0,2).join(" · ")} · ${formatDate(b.created_at)}</div>
+              <div class="bottle-meta">${(person?.personality_tags || []).slice(0,2).join(" · ")} · ${formatDate(b.created_at)}${statusLabel ? ` · ${statusLabel}` : ""}</div>
             </div>
             <div class="bottle-score">
               <div class="score-num">${Math.round(b.match_score || 0)}</div>
-              <div class="score-label">マッチ度</div>
+              <div class="score-label">${t("score.label")}</div>
             </div>
-          </div>
-        `).join("")}
-      </div>`;
-  } catch (err) {
-    document.getElementById("bottleListContainer").innerHTML = `
-      <div class="empty-state"><div>読み込みに失敗しました</div></div>`;
-  }
+          </div>`;
+      }).join("")}
+    </div>`;
 }
 
 // ===== ボトル詳細 =====
@@ -837,30 +1118,30 @@ async function openBottle(bottleId) {
           <div class="bottle-avatar">🍾</div>
           <div>
             <div class="sender-name">${sender.character_name || "???"}</div>
-            <div class="match-badge">✨ マッチ度 ${Math.round(bottle.match_score || 0)}点</div>
+            <div class="match-badge">${t("match.badge")} ${Math.round(bottle.match_score || 0)}${t("match.pts")}</div>
           </div>
         </div>
 
         ${sender.personality_tags?.length ? `
           <div class="tags" style="margin-bottom:16px">
-            ${sender.personality_tags.map(t => `<span class="tag">${t}</span>`).join("")}
+            ${sender.personality_tags.map(tag => `<span class="tag">${tag}</span>`).join("")}
           </div>` : ""}
 
         ${sender.personality_summary ? `
-          <div class="section-label">個性</div>
+          <div class="section-label">${t("section.personality")}</div>
           <div class="personality-text">${sender.personality_summary}</div>` : ""}
 
-        <div class="section-label">マッチした理由</div>
-        <div class="match-reason-text">${bottle.match_reason || "AIがあなたたちの相性を感じました"}</div>
+        <div class="section-label">${t("section.match.reason")}</div>
+        <div class="match-reason-text">${bottle.match_reason || t("match.reason.fallback")}</div>
       </div>
     `;
 
     document.getElementById("openChatBtn").textContent =
-      bottle.status === "replied" ? "💬 チャットを続ける" : "💬 メッセージを送る";
+      bottle.status === "replied" ? t("bottle.chat.continue") : t("bottle.chat");
 
     showView("view-bottle");
   } catch (err) {
-    toast("読み込みに失敗しました");
+    toast(t("load.failed"));
   }
 }
 
@@ -869,7 +1150,7 @@ function openChat() {
   if (!state.currentBottle) return;
   const sender = state.currentBottle.sender || {};
   document.getElementById("chatTitle").textContent = sender.character_name || "???";
-  document.getElementById("chatSub").textContent = "マッチしました";
+  document.getElementById("chatSub").textContent = t("chat.matched");
   loadMessages();
   showView("view-chat");
 }
@@ -888,7 +1169,7 @@ async function loadMessages() {
 function renderMessages(messages) {
   const el = document.getElementById("chatMessages");
   if (!messages.length) {
-    el.innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:40px 0;font-size:.9rem">最初のメッセージを送ってみましょう 🍾</div>`;
+    el.innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:40px 0;font-size:.9rem">${t("chat.empty")}</div>`;
     return;
   }
   el.innerHTML = messages.map(m => {
@@ -902,10 +1183,29 @@ function renderMessages(messages) {
   el.scrollTop = el.scrollHeight;
 }
 
+let isSending = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const chatInput = document.getElementById("chatInput");
+  if (chatInput) {
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.isComposing) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
+});
+
 async function sendMessage() {
+  if (isSending) return;
   const input = document.getElementById("chatInput");
   const content = input.value.trim();
   if (!content || !state.currentBottle) return;
+
+  isSending = true;
+  const sendBtn = document.getElementById("sendBtn");
+  if (sendBtn) sendBtn.disabled = true;
   input.value = "";
 
   try {
@@ -916,8 +1216,33 @@ async function sendMessage() {
     });
     await loadMessages();
   } catch {
-    toast("送信に失敗しました");
+    toast(t("send.failed"));
     input.value = content;
+  } finally {
+    isSending = false;
+    if (sendBtn) sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+async function sendWave() {
+  if (isSending || !state.currentBottle) return;
+  const waveBtn = document.getElementById("waveBtn");
+  waveBtn.classList.add("waved");
+  setTimeout(() => waveBtn.classList.remove("waved"), 500);
+
+  isSending = true;
+  try {
+    await fetch(`${API}/api/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": state.userId },
+      body: JSON.stringify({ bottle_id: state.currentBottle.id, content: "👋" })
+    });
+    await loadMessages();
+  } catch {
+    toast(t("send.failed"));
+  } finally {
+    isSending = false;
   }
 }
 
@@ -927,10 +1252,10 @@ function formatDate(iso) {
   const d = new Date(iso);
   const now = new Date();
   const diff = (now - d) / 1000;
-  if (diff < 60) return "たった今";
-  if (diff < 3600) return `${Math.floor(diff/60)}分前`;
-  if (diff < 86400) return `${Math.floor(diff/3600)}時間前`;
-  return `${Math.floor(diff/86400)}日前`;
+  if (diff < 60)    return t("time.now");
+  if (diff < 3600)  return `${Math.floor(diff/60)}${t("time.min")}`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}${t("time.hour")}`;
+  return `${Math.floor(diff/86400)}${t("time.day")}`;
 }
 
 function escHtml(s) {

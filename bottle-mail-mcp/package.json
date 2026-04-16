@@ -1,0 +1,16 @@
+{
+  "name": "bottle-mail-mcp",
+  "version": "0.1.0",
+  "description": "Bottle Mail MCP server for Claude Desktop",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "bottle-mail-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2"
+  }
+}
