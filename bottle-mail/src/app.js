@@ -189,13 +189,12 @@ app.post("/api/users", async (req, res) => {
 
     if (insertErr) throw new Error(insertErr.message);
 
-    // 登録完了を先に返し、マッチングはwaitForEmptyEvent patternで実行
-    // Vercel対応: レスポンス前にマッチングを完了させる
-    if (anthropic && personality_summary) {
-      await runMatching(supabase, anthropic, newUser);
-    }
+    // 先にレスポンスを返してからマッチングを実行（タイムアウト回避）
+    res.status(201).json({ user: newUser });
 
-    return res.status(201).json({ user: newUser });
+    if (anthropic && personality_summary) {
+      runMatching(supabase, anthropic, newUser).catch(console.error);
+    }
   } catch (err) {
     return res.status(500).json({ error: "登録に失敗しました", detail: err.message });
   }
@@ -213,38 +212,63 @@ async function runMatching(supabase, anthropic, newUser) {
 
   if (!others?.length) return;
 
-  for (const other of others) {
-    // すでにボトルがある場合はスキップ
-    const { data: existing } = await supabase
-      .from("bottles")
-      .select("id")
-      .or(`and(sender_id.eq.${newUser.id},recipient_id.eq.${other.id}),and(sender_id.eq.${other.id},recipient_id.eq.${newUser.id})`)
-      .maybeSingle();
+  // 既存ボトルを一括取得
+  const { data: existingBottles } = await supabase
+    .from("bottles")
+    .select("sender_id, recipient_id")
+    .or(`sender_id.eq.${newUser.id},recipient_id.eq.${newUser.id}`);
 
-    if (existing) continue;
+  const alreadyMatched = new Set(
+    (existingBottles || []).map(b =>
+      b.sender_id === newUser.id ? b.recipient_id : b.sender_id
+    )
+  );
 
-    const match = await calcMatchScore(anthropic, newUser, other);
-    if (match.score < 60) continue; // 60点未満はスキップ
+  const targets = others.filter(o => !alreadyMatched.has(o.id));
+  if (!targets.length) return;
 
-    // お互いにボトルを送り合う
-    await supabase.from("bottles").insert([
-      {
-        sender_id: newUser.id,
-        recipient_id: other.id,
-        match_score: match.score,
-        match_reason: match.reason,
-        status: "unread"
-      },
-      {
-        sender_id: other.id,
-        recipient_id: newUser.id,
-        match_score: match.score,
-        match_reason: match.reason,
-        status: "unread"
-      }
+  // 全員と並列でスコア計算
+  const results = await Promise.all(
+    targets.map(async (other) => {
+      const match = await calcMatchScore(anthropic, newUser, other);
+      return { other, match };
+    })
+  );
+
+  // 60点以上のみボトル送信
+  const toInsert = results
+    .filter(({ match }) => match.score >= 60)
+    .flatMap(({ other, match }) => [
+      { sender_id: newUser.id, recipient_id: other.id, match_score: match.score, match_reason: match.reason, status: "unread" },
+      { sender_id: other.id, recipient_id: newUser.id, match_score: match.score, match_reason: match.reason, status: "unread" }
     ]);
+
+  if (toInsert.length) {
+    await supabase.from("bottles").insert(toInsert);
   }
 }
+
+// 送ったボトル一覧
+app.get("/api/bottles/sent", async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    if (!supabase) return res.status(400).json({ error: "Supabase設定が未完了です" });
+
+    const userId = req.headers["x-user-id"];
+    if (!userId) return res.status(401).json({ error: "x-user-id ヘッダーが必要です" });
+
+    const { data, error } = await supabase
+      .from("bottles")
+      .select("*, recipient:recipient_id(id, character_name, personality_tags)")
+      .eq("sender_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return res.json({ bottles: data });
+  } catch (err) {
+    return res.status(500).json({ error: "取得に失敗しました", detail: err.message });
+  }
+});
 
 // 受け取ったボトル一覧
 app.get("/api/bottles", async (req, res) => {
@@ -356,6 +380,28 @@ app.get("/api/messages/:bottleId", async (req, res) => {
     return res.json({ messages: data });
   } catch (err) {
     return res.status(500).json({ error: "取得に失敗しました", detail: err.message });
+  }
+});
+
+// メールアドレスでログイン（IDを返す）
+app.post("/api/login", async (req, res) => {
+  try {
+    const supabase = getSupabase();
+    if (!supabase) return res.status(400).json({ error: "Supabase設定が未完了です" });
+
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "email は必須です" });
+
+    const { data, error } = await supabase
+      .from("bottle_users")
+      .select("id, character_name, personality_tags")
+      .eq("email", email.trim().toLowerCase())
+      .single();
+
+    if (error || !data) return res.status(404).json({ error: "メールアドレスが見つかりません" });
+    return res.json({ user: data });
+  } catch (err) {
+    return res.status(500).json({ error: "ログインに失敗しました", detail: err.message });
   }
 });
 
