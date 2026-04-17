@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bottle-mail",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["src/app.js"],
+      "port": 8788
+    }
+  ]
+}
