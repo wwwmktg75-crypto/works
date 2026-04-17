@@ -307,40 +307,12 @@
     }
     @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
-    /* ===== ボトル詳細 ===== */
-    #view-bottle { padding: 32px 20px; max-width: 600px; margin: 0 auto; }
     .back-btn {
       background: transparent; border: none; color: var(--text-dim); cursor: pointer;
       font-size: .9rem; display: flex; align-items: center; gap: 6px; margin-bottom: 24px;
       padding: 0; transition: color .2s;
     }
     .back-btn:hover { color: var(--text); }
-    .bottle-detail-card {
-      background: var(--card-bg); border: 1px solid rgba(255,255,255,.1);
-      border-radius: 24px; padding: 32px; margin-bottom: 24px;
-    }
-    .bottle-header {
-      display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
-    }
-    .bottle-avatar {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: linear-gradient(135deg, #0a3357, #0d6efd);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; flex-shrink: 0;
-    }
-    .sender-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
-    .match-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(244,162,97,.15); border: 1px solid rgba(244,162,97,.3);
-      border-radius: 100px; padding: 4px 12px; font-size: .82rem; color: var(--amber);
-    }
-    .section-label { font-size: .82rem; color: var(--text-dim); font-weight: 600; margin-bottom: 8px; letter-spacing: .05em; }
-    .personality-text { line-height: 1.8; color: var(--text); margin-bottom: 20px; }
-    .match-reason-text {
-      background: rgba(13,110,253,.08); border: 1px solid rgba(13,110,253,.2);
-      border-radius: 10px; padding: 14px 16px; font-size: .9rem; line-height: 1.7;
-      color: var(--foam);
-    }
 
     /* ===== チャット ===== */
     #view-chat { display: flex; flex-direction: column; height: calc(100vh - 65px); max-width: 600px; margin: 0 auto; }
@@ -360,6 +332,9 @@
     .msg {
       max-width: 76%; padding: 12px 16px; border-radius: 18px;
       font-size: .93rem; line-height: 1.6;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
     .msg.mine {
       align-self: flex-end;
@@ -377,14 +352,40 @@
       padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.06);
       background: rgba(2,11,24,.8); backdrop-filter: blur(10px);
     }
-    .chat-input-row { display: flex; gap: 10px; }
-    .chat-input-row input {
-      flex: 1; padding: 12px 18px; border-radius: 100px;
+    .chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+    .chat-input-row textarea#chatInput {
+      flex: 1; min-height: 46px; max-height: 140px; padding: 12px 18px; border-radius: 22px;
       background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.12);
       color: var(--text); font-size: .93rem; outline: none;
       transition: border-color .2s; font-family: inherit;
+      resize: none; line-height: 1.5;
     }
-    .chat-input-row input:focus { border-color: var(--ocean-glow); }
+    .chat-input-row textarea#chatInput:focus { border-color: var(--ocean-glow); }
+    .btn-kaomoji {
+      width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15);
+      background: transparent; font-size: 1.15rem; cursor: pointer; flex-shrink: 0;
+      transition: all .2s; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-kaomoji:hover, .btn-kaomoji.open { background: rgba(255,255,255,.1); border-color: var(--ocean-glow); }
+    .kaomoji-panel {
+      margin-top: 12px; padding: 14px; border-radius: 14px;
+      background: rgba(6,29,53,.95); border: 1px solid rgba(255,255,255,.1);
+      max-height: 220px; overflow-y: auto;
+    }
+    .kaomoji-panel[hidden] { display: none !important; }
+    .kaomoji-section-label {
+      font-size: .72rem; color: var(--text-dim); font-weight: 700; margin: 10px 0 8px;
+      letter-spacing: .06em;
+    }
+    .kaomoji-section-label:first-child { margin-top: 0; }
+    .kaomoji-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip-kaomoji {
+      padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.35); color: var(--text); font-size: .88rem;
+      cursor: pointer; font-family: inherit; line-height: 1.4;
+      transition: all .15s; max-width: 100%;
+    }
+    .chip-kaomoji:hover { border-color: var(--amber); background: rgba(244,162,97,.08); }
     .btn-send {
       width: 46px; height: 46px; border-radius: 50%;
       background: linear-gradient(135deg, #0a6ebd, #0d8ade);
@@ -622,29 +623,22 @@
     </div>
   </div>
 
-  <!-- ボトル詳細 -->
-  <div id="view-bottle" class="view">
-    <button class="back-btn" onclick="showView('view-dashboard')">← <span data-i18n="back">戻る</span></button>
-    <div id="bottleDetailContent"></div>
-    <button class="btn btn-amber btn-lg" style="width:100%" id="openChatBtn" onclick="openChat()" data-i18n="bottle.chat">
-      💬 メッセージを送る
-    </button>
-  </div>
-
   <!-- チャット -->
   <div id="view-chat" class="view">
     <div class="chat-header">
-      <button class="back-btn" style="margin-bottom:0" onclick="showView('view-bottle')">← <span data-i18n="back">戻る</span></button>
+      <button class="back-btn" style="margin-bottom:0" onclick="loadDashboard()">← <span data-i18n="back">戻る</span></button>
       <div class="chat-title" id="chatTitle"></div>
       <div class="chat-sub" id="chatSub"></div>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-area">
       <div class="chat-input-row">
-        <button class="btn-wave" id="waveBtn" onclick="sendWave()" data-i18n-title="chat.wave.title" title="手を振る">👋</button>
-        <input type="text" id="chatInput" data-i18n-placeholder="chat.placeholder" placeholder="メッセージを入力...">
-        <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
+        <button type="button" class="btn-wave" id="waveBtn" onclick="sendWave()" data-i18n-title="chat.wave.title" title="手を振る">👋</button>
+        <button type="button" class="btn-kaomoji" id="btnKaomoji" data-i18n-title="chat.kaomoji.toggleTitle" title="顔文字・絵文字">😊</button>
+        <textarea id="chatInput" rows="1" data-i18n-placeholder="chat.placeholder" placeholder="メッセージを入力..."></textarea>
+        <button type="button" class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
       </div>
+      <div class="kaomoji-panel" id="kaomojiPanel" hidden></div>
     </div>
   </div>
 </div>
@@ -697,9 +691,12 @@ const MESSAGES = {
     "tab.inbox":              "📬 受信",
     "tab.sent":               "🍾 送信済み",
     "back":                   "戻る",
-    "bottle.chat":            "💬 メッセージを送る",
+    "bottle.chat":            "💬 チャットを開く",
     "bottle.chat.continue":   "💬 チャットを続ける",
     "chat.wave.title":        "手を振る",
+    "chat.kaomoji.toggleTitle": "顔文字・絵文字を挿入",
+    "chat.kaomoji.emoji":     "絵文字",
+    "chat.kaomoji.face":      "顔文字",
     "chat.placeholder":       "メッセージを入力...",
     "chat.matched":           "マッチしました",
     "chat.empty":             "最初のメッセージを送ってみましょう 🍾",
@@ -773,9 +770,12 @@ const MESSAGES = {
     "tab.inbox":              "📬 Received",
     "tab.sent":               "🍾 Sent",
     "back":                   "Back",
-    "bottle.chat":            "💬 Send a message",
+    "bottle.chat":            "💬 Open chat",
     "bottle.chat.continue":   "💬 Continue chat",
     "chat.wave.title":        "Wave hello",
+    "chat.kaomoji.toggleTitle": "Insert emoji / kaomoji",
+    "chat.kaomoji.emoji":     "Emoji",
+    "chat.kaomoji.face":      "Kaomoji",
     "chat.placeholder":       "Type a message...",
     "chat.matched":           "Matched!",
     "chat.empty":             "Send your first message 🍾",
@@ -839,12 +839,101 @@ function applyLang() {
   document.querySelectorAll(".project-url").forEach(el => {
     el.placeholder = t("reg.url.placeholder");
   });
+  refreshKaomojiLabels();
 }
 
 function toggleLang() {
   currentLang = currentLang === "ja" ? "en" : "ja";
   localStorage.setItem("bottleLang", currentLang);
   applyLang();
+}
+
+// チャット用：絵文字・顔文字プリセット
+const KAOMOJI_EMOJI = ["😊", "😂", "🥰", "😭", "🥺", "😉", "👍", "👏", "🙏", "✨", "🎉", "💕", "🔥", "🍾", "🌊", "💬"];
+const KAOMOJI_FACE = [
+  "(´∀｀)", "(｡•̀ᴗ-)✧", "(๑˃̵ᴗ˂̵๑)", "＼(^o^)／", "(ง •̀_•́)ง", "(｡>﹏<｡)",
+  "m(_ _)m", "(笑)", "(´･ω･`)", "(*´▽`*)", "(^-^)/", "orz", "(ﾉД`)"
+];
+
+function refreshKaomojiLabels() {
+  const a = document.getElementById("kaomojiLabelEmoji");
+  const b = document.getElementById("kaomojiLabelFace");
+  if (a) a.textContent = t("chat.kaomoji.emoji");
+  if (b) b.textContent = t("chat.kaomoji.face");
+}
+
+function autoGrowChatInput() {
+  const ta = document.getElementById("chatInput");
+  if (!ta) return;
+  ta.style.height = "auto";
+  ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
+}
+
+function insertAtChatCursor(text) {
+  const ta = document.getElementById("chatInput");
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const v = ta.value;
+  ta.value = v.slice(0, start) + text + v.slice(end);
+  const pos = start + text.length;
+  ta.selectionStart = ta.selectionEnd = pos;
+  ta.focus();
+  autoGrowChatInput();
+}
+
+function setKaomojiPanelOpen(open) {
+  const panel = document.getElementById("kaomojiPanel");
+  const btn = document.getElementById("btnKaomoji");
+  if (!panel || !btn) return;
+  panel.hidden = !open;
+  btn.classList.toggle("open", open);
+}
+
+function initKaomojiPanel() {
+  const panel = document.getElementById("kaomojiPanel");
+  if (!panel) return;
+  panel.innerHTML = `
+    <div class="kaomoji-section-label" id="kaomojiLabelEmoji"></div>
+    <div class="kaomoji-chips" id="kaomojiEmojiChips"></div>
+    <div class="kaomoji-section-label" id="kaomojiLabelFace"></div>
+    <div class="kaomoji-chips" id="kaomojiFaceChips"></div>
+  `;
+  refreshKaomojiLabels();
+
+  function addChips(containerId, items) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    items.forEach((sym) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip-kaomoji";
+      b.textContent = sym;
+      b.addEventListener("click", () => {
+        insertAtChatCursor(sym);
+        setKaomojiPanelOpen(false);
+      });
+      container.appendChild(b);
+    });
+  }
+  addChips("kaomojiEmojiChips", KAOMOJI_EMOJI);
+  addChips("kaomojiFaceChips", KAOMOJI_FACE);
+
+  const btn = document.getElementById("btnKaomoji");
+  if (btn) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const p = document.getElementById("kaomojiPanel");
+      setKaomojiPanelOpen(!!p?.hidden);
+    });
+  }
+  document.addEventListener("click", (e) => {
+    const panel = document.getElementById("kaomojiPanel");
+    const b = document.getElementById("btnKaomoji");
+    if (!panel || panel.hidden) return;
+    if (b?.contains(e.target) || panel.contains(e.target)) return;
+    setKaomojiPanelOpen(false);
+  });
 }
 
 // ===== 設定 =====
@@ -862,6 +951,7 @@ let state = {
 // ===== 初期化 =====
 window.addEventListener("load", () => {
   applyLang();
+  initKaomojiPanel();
   initOcean();
   if (state.userId) {
     updateNavLoggedIn();
@@ -1168,7 +1258,7 @@ function renderBottles() {
     </div>`;
 }
 
-// ===== ボトル詳細 =====
+// ===== ボトルを開く → そのままチャット =====
 async function openBottle(bottleId) {
   try {
     const res = await fetch(`${API}/api/bottles/${bottleId}/open`, {
@@ -1177,36 +1267,7 @@ async function openBottle(bottleId) {
     });
     const { bottle } = await res.json();
     state.currentBottle = bottle;
-
-    const sender = bottle.sender || {};
-    document.getElementById("bottleDetailContent").innerHTML = `
-      <div class="bottle-detail-card">
-        <div class="bottle-header">
-          <div class="bottle-avatar">🍾</div>
-          <div>
-            <div class="sender-name">${sender.character_name || "???"}</div>
-            <div class="match-badge">${t("match.badge")} ${Math.round(bottle.match_score || 0)}${t("match.pts")}</div>
-          </div>
-        </div>
-
-        ${sender.personality_tags?.length ? `
-          <div class="tags" style="margin-bottom:16px">
-            ${sender.personality_tags.map(tag => `<span class="tag">${tag}</span>`).join("")}
-          </div>` : ""}
-
-        ${sender.personality_summary ? `
-          <div class="section-label">${t("section.personality")}</div>
-          <div class="personality-text">${sender.personality_summary}</div>` : ""}
-
-        <div class="section-label">${t("section.match.reason")}</div>
-        <div class="match-reason-text">${bottle.match_reason || t("match.reason.fallback")}</div>
-      </div>
-    `;
-
-    document.getElementById("openChatBtn").textContent =
-      bottle.status === "replied" ? t("bottle.chat.continue") : t("bottle.chat");
-
-    showView("view-bottle");
+    openChat();
   } catch (err) {
     toast(t("load.failed"));
   }
@@ -1215,11 +1276,20 @@ async function openBottle(bottleId) {
 // ===== チャット =====
 function openChat() {
   if (!state.currentBottle) return;
+  setKaomojiPanelOpen(false);
   const sender = state.currentBottle.sender || {};
+  const score = Math.round(state.currentBottle.match_score || 0);
   document.getElementById("chatTitle").textContent = sender.character_name || "???";
-  document.getElementById("chatSub").textContent = t("chat.matched");
+  document.getElementById("chatSub").textContent =
+    `${t("chat.matched")} · ${t("match.badge")} ${score}${t("match.pts")}`;
   loadMessages();
   showView("view-chat");
+  const ta = document.getElementById("chatInput");
+  if (ta) {
+    ta.style.height = "auto";
+    autoGrowChatInput();
+    setTimeout(() => ta.focus(), 80);
+  }
 }
 
 async function loadMessages() {
@@ -1255,8 +1325,9 @@ let isSending = false;
 document.addEventListener("DOMContentLoaded", () => {
   const chatInput = document.getElementById("chatInput");
   if (chatInput) {
+    chatInput.addEventListener("input", () => autoGrowChatInput());
     chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.isComposing) {
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
         e.preventDefault();
         sendMessage();
       }
@@ -1274,14 +1345,20 @@ async function sendMessage() {
   const sendBtn = document.getElementById("sendBtn");
   if (sendBtn) sendBtn.disabled = true;
   input.value = "";
+  autoGrowChatInput();
 
   try {
-    await fetch(`${API}/api/messages`, {
+    const res = await fetch(`${API}/api/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-user-id": state.userId },
       body: JSON.stringify({ bottle_id: state.currentBottle.id, content })
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || res.status);
+    }
     await loadMessages();
+    autoGrowChatInput();
   } catch {
     toast(t("send.failed"));
     input.value = content;
@@ -1300,11 +1377,12 @@ async function sendWave() {
 
   isSending = true;
   try {
-    await fetch(`${API}/api/messages`, {
+    const res = await fetch(`${API}/api/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-user-id": state.userId },
       body: JSON.stringify({ bottle_id: state.currentBottle.id, content: "👋" })
     });
+    if (!res.ok) throw new Error("wave failed");
     await loadMessages();
   } catch {
     toast(t("send.failed"));
