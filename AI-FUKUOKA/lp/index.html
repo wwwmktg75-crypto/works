@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIやろうぜ！in FUKUOKA</title>
+  <link rel="icon" type="image/png" href="images/character2.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --yellow: #FFD000;
+      --yellow-light: #FFF8D6;
+      --yellow-dark: #E6B800;
+      --dark: #1A1A2E;
+      --gray: #6B7280;
+      --gray-light: #F9FAFB;
+      --white: #FFFFFF;
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--white);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #F0F0F0;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--dark);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-badge {
+      background: var(--yellow);
+      color: var(--dark);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.05em;
+    }
+    nav { display: flex; gap: 32px; align-items: center; }
+    nav a {
+      text-decoration: none;
+      color: var(--gray);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--dark); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 24px;
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--yellow);
+      color: var(--dark);
+    }
+    .btn-primary:hover {
+      background: var(--yellow-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(255,208,0,0.4);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--dark);
+      border: 2px solid var(--dark);
+    }
+    .btn-outline:hover {
+      background: var(--dark);
+      color: var(--white);
+    }
+    .btn-lg {
+      padding: 16px 40px;
+      font-size: 16px;
+      border-radius: 99px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 60px;
+      align-items: center;
+    }
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--yellow-light);
+      color: var(--dark);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 99px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero-label::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--yellow);
+      border-radius: 50%;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+    .hero h1 span {
+      position: relative;
+      display: inline-block;
+    }
+    .hero h1 span::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      height: 12px;
+      background: var(--yellow);
+      z-index: -1;
+      border-radius: 4px;
+      opacity: 0.6;
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--gray);
+      line-height: 1.8;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+    .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .hero-image-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-image-bg {
+      width: 380px;
+      height: 380px;
+      background: var(--yellow);
+      border-radius: 50%;
+      position: absolute;
+      opacity: 0.15;
+    }
+    .hero-image {
+      position: relative;
+      z-index: 1;
+      width: 360px;
+      height: auto;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.12));
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    /* ── STATS ── */
+    .stats {
+      background: var(--yellow);
+      padding: 40px 24px;
+    }
+    .stats-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--dark);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--dark);
+      opacity: 0.7;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* ── SECTION COMMON ── */
+    section { padding: 80px 24px; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 16px;
+      color: var(--gray);
+      line-height: 1.8;
+      max-width: 560px;
+    }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header .section-desc { margin: 0 auto; }
+
+    /* ── SERVICES ── */
+    #services {
+      position: relative;
+      overflow: visible;
+      padding-bottom: 0;
+    }
+    #services::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      bottom: 80px;
+      background: url('images/photo.png') center center / cover no-repeat;
+      filter: brightness(0.35) saturate(0.8);
+      z-index: 0;
+    }
+    #services .section-inner {
+      position: relative;
+      z-index: 1;
+    }
+    #services .section-label { color: rgba(255,255,255,0.5); }
+    #services .section-title { color: #fff; }
+    #services .section-desc { color: rgba(255,255,255,0.7); }
+    #services .services-grid {
+      transform: translateY(60px);
+    }
+    #services .service-card {
+      background: #fff;
+      border: 1px solid #EFEFEF;
+      backdrop-filter: none;
+      color: var(--dark);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    }
+    #services .service-card:hover {
+      border-color: var(--yellow);
+      box-shadow: 0 16px 40px rgba(255,208,0,0.2);
+    }
+    #services .service-title { color: var(--dark); }
+    #services .service-desc { color: var(--gray); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .service-card {
+      background: var(--gray-light);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .service-card:hover {
+      border-color: var(--yellow);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(255,208,0,0.15);
+    }
+    .service-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--yellow);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+    .service-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .service-desc {
+      font-size: 14px;
+      color: var(--gray);
+      line-height: 1.7;
+    }
+
+    /* ── ABOUT ── */
+    .about { background: var(--gray-light); }
+    .about-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .about-image-wrap {
+      position: relative;
+    }
+    .about-image-bg {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--yellow);
+      border-radius: 40px;
+      opacity: 0.2;
+      position: absolute;
+    }
+    .about-image {
+      position: relative;
+      z-index: 1;
+      width: 85%;
+      margin: 0 auto;
+      display: block;
+      filter: drop-shadow(0 16px 32px rgba(0,0,0,0.1));
+    }
+    .about-features { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
+    .about-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .about-feature-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--yellow);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+    .about-feature-text {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.6;
+    }
+
+    /* ── REPORTS ── */
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    .report-card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid #EFEFEF;
+      background: var(--white);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: all 0.3s;
+    }
+    .report-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+    }
+    .report-card-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: var(--yellow-light);
+      display: block;
+    }
+    .report-card-img-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--yellow-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+    .report-card-body { padding: 20px 24px 24px; }
+    .report-card-date {
+      font-size: 12px;
+      color: var(--gray);
+      margin-bottom: 8px;
+    }
+    .report-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .report-card-desc {
+      font-size: 13px;
+      color: var(--gray);
+      line-height: 1.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .report-card-tag {
+      display: inline-block;
+      background: var(--yellow-light);
+      color: var(--dark);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 10px;
+    }
+    .reports-more { text-align: center; }
+    @media (max-width: 768px) {
+      .reports-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── CTA ── */
+    .cta {
+      background: var(--dark);
+      text-align: center;
+      padding: 80px 24px;
+    }
+    .cta h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 900;
+      color: var(--white);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .cta p {
+      color: rgba(255,255,255,0.6);
+      font-size: 16px;
+      margin-bottom: 40px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── DISCORD BUTTON ── */
+    .btn-discord {
+      background: #5865F2;
+      color: var(--white);
+    }
+    .btn-discord:hover {
+      background: #4752C4;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(88,101,242,0.4);
+    }
+
+    /* ── YOUTUBE ── */
+    .youtube-section { background: var(--gray-light); }
+    .youtube-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .youtube-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.12);
+    }
+    .youtube-embed iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .youtube-caption {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--white);
+      border-top: 1px solid #F0F0F0;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .footer-logo {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+    .footer-text {
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 48px 20px;
+        text-align: center;
+      }
+      .hero-image-wrap { order: -1; }
+      .hero-image { width: 260px; }
+      .hero-image-bg { width: 280px; height: 280px; }
+      .hero-actions { justify-content: center; }
+      .hero-desc { margin-left: auto; margin-right: auto; }
+      .services-grid { grid-template-columns: 1fr; }
+      .about-inner { grid-template-columns: 1fr; }
+      .stats-inner { grid-template-columns: 1fr; gap: 32px; }
+      nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <a href="#" class="logo">
+        AIやろうぜ！
+        <span class="logo-badge">in FUKUOKA</span>
+      </a>
+      <nav>
+        <a href="#about">活動について</a>
+        <a href="#services">プログラム</a>
+        <a href="#join">参加する</a>
+      </nav>
+      <a href="https://page.theapps.jp/advance/discord/U8hv3G40M25l34i8" target="_blank" rel="noopener" class="btn btn-discord">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.245 1.175A14.836 14.836 0 0 0 11.602 0c-.163.294-.353.69-.484.004a10.36 10.36 0 0 0-2.637 0 9.994 9.994 0 0 0-.484-.004A14.84 14.84 0 0 0 4.355 1.175C1.28 5.856.42 10.422.85 14.93c1.71 1.27 3.367 2.04 4.997 2.547a11.7 11.7 0 0 0 1.014-1.666 9.727 9.727 0 0 1-1.597-.775c.134-.098.265-.2.391-.305 3.082 1.434 6.432 1.434 9.48 0 .128.106.259.207.391.305a9.748 9.748 0 0 1-1.599.776 11.66 11.66 0 0 0 1.014 1.665c1.632-.507 3.29-1.277 5-2.547.497-5.207-.845-9.73-3.696-13.755ZM6.25 12.218c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347.002 1.292-.917 2.346-2.077 2.346Zm5.5 0c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347 0 1.292-.917 2.346-2.077 2.346Z" fill="currentColor"/></svg>
+        Discordで参加する
+      </a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main>
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-label">福岡発・AI市民コミュニティ</div>
+        <h1>
+          AIで、<span>福岡</span>を<br>もっと面白く。
+        </h1>
+        <p class="hero-desc">
+          「AIやろうぜ！in FUKUOKA」は、AI・生成AIに興味のある市民が集まり、一緒に学び・体験・交流するコミュニティです。初心者大歓迎！
+        </p>
+        <div class="hero-actions">
+          <a href="https://page.theapps.jp/advance/discord/U8hv3G40M25l34i8" target="_blank" rel="noopener" class="btn btn-discord btn-lg">
+            <svg width="20" height="15" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.245 1.175A14.836 14.836 0 0 0 11.602 0c-.163.294-.353.69-.484.004a10.36 10.36 0 0 0-2.637 0 9.994 9.994 0 0 0-.484-.004A14.84 14.84 0 0 0 4.355 1.175C1.28 5.856.42 10.422.85 14.93c1.71 1.27 3.367 2.04 4.997 2.547a11.7 11.7 0 0 0 1.014-1.666 9.727 9.727 0 0 1-1.597-.775c.134-.098.265-.2.391-.305 3.082 1.434 6.432 1.434 9.48 0 .128.106.259.207.391.305a9.748 9.748 0 0 1-1.599.776 11.66 11.66 0 0 0 1.014 1.665c1.632-.507 3.29-1.277 5-2.547.497-5.207-.845-9.73-3.696-13.755ZM6.25 12.218c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347.002 1.292-.917 2.346-2.077 2.346Zm5.5 0c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347 0 1.292-.917 2.346-2.077 2.346Z" fill="currentColor"/></svg>
+            Discordで無料参加 →
+          </a>
+          <a href="#about" class="btn btn-outline btn-lg">活動を見る</a>
+        </div>
+      </div>
+      <div class="hero-image-wrap">
+        <div class="hero-image-bg"></div>
+        <img
+          src="images/character.png"
+          alt="AIやろうぜ！FUKUOKAキャラクター"
+          class="hero-image"
+        />
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stats-inner">
+        <div>
+          <div class="stat-value">毎月</div>
+          <div class="stat-label">定期勉強会・交流会を開催</div>
+        </div>
+        <div>
+          <div class="stat-value">0円</div>
+          <div class="stat-label">参加費無料（一部イベントを除く）</div>
+        </div>
+        <div>
+          <div class="stat-value">初心者</div>
+          <div class="stat-label">大歓迎！知識ゼロでも参加できる</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <section id="services">
+      <div class="section-inner">
+        <div class="section-header">
+          <div class="section-label">Our Programs</div>
+          <h2 class="section-title">こんな活動をしています</h2>
+          <p class="section-desc">AIに触れる機会をさまざまな形でお届けします。気軽に参加してみてください。</p>
+        </div>
+        <div class="services-grid">
+          <div class="service-card">
+            <div class="service-title">勉強会・ハンズオン</div>
+            <p class="service-desc">生成AI・ChatGPT・Claude などの最新ツールを実際に使いながら学ぶ体験型勉強会を毎月開催。</p>
+          </div>
+          <div class="service-card">
+            <div class="service-title">交流会・ネットワーキング</div>
+            <p class="service-desc">同じ興味を持つ仲間と出会える場。エンジニア・デザイナー・ビジネスパーソン・学生が集まります。</p>
+          </div>
+          <div class="service-card">
+            <div class="service-title">オンライン情報共有</div>
+            <p class="service-desc">最新のAIニュースや活用事例をメンバー間でシェア。オンラインでも常につながれる環境。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- YOUTUBE -->
+    <section class="youtube-section" style="padding-top: 140px;">
+      <div class="section-inner">
+        <div class="section-header">
+          <div class="section-label">Watch</div>
+          <h2 class="section-title">活動の様子を動画で見る</h2>
+        </div>
+        <div class="youtube-wrap">
+          <div class="youtube-embed">
+            <iframe
+              src="https://www.youtube.com/embed/B-u7xzWfSdY"
+              title="AIやろうぜ！in FUKUOKA 活動紹介"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <p class="youtube-caption">▶ AIやろうぜ！in FUKUOKA の活動紹介動画</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="about">
+      <div class="about-inner">
+        <div class="about-image-wrap">
+          <div class="about-image-bg"></div>
+          <img
+            src="images/study.jpg"
+            alt="AIやろうぜ！in FUKUOKA 勉強会の様子"
+            class="about-image"
+          />
+        </div>
+        <div>
+          <div class="section-label">Our Story</div>
+          <h2 class="section-title">福岡市民のための<br>AIコミュニティ</h2>
+          <p class="section-desc">
+            AIやテクノロジーを、難しいものではなく、誰もが気軽に触れられるものに。そんな想いで活動しています。
+          </p>
+          <div class="about-features">
+            <div class="about-feature">
+              <div class="about-feature-dot"></div>
+              <div class="about-feature-text">福岡市内の公共施設・市民交流スペースで開催</div>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-dot"></div>
+              <div class="about-feature-text">営利・宗教・政治活動は一切行いません</div>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-dot"></div>
+              <div class="about-feature-text">地域のDX推進・デジタルリテラシー向上に貢献</div>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-dot"></div>
+              <div class="about-feature-text">初心者から上級者まで、誰でも歓迎</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="reports">
+      <div class="section-inner">
+        <div class="section-header">
+          <div class="section-label">Activity Reports</div>
+          <h2 class="section-title">活動報告</h2>
+          <p class="section-desc">これまでの勉強会・イベントの様子をレポートしています。</p>
+        </div>
+        <div class="reports-grid">
+          <a href="report/01.html" class="report-card">
+            <img src="images/202604.png" alt="第1回 生成AI入門ハンズオン" class="report-card-img" />
+            <div class="report-card-body">
+              <span class="report-card-tag">勉強会</span>
+              <div class="report-card-date">2026年4月6日</div>
+              <div class="report-card-title">定期勉強会Vol.18</div>
+              <p class="report-card-desc">今回のテーマは最近話題の「Claude Code」何ができるかよくわからない、興味はあるがまだ使えていない、という方々向けにメンバーによる事例発表を行いました。</p>
+            </div>
+          </a>
+          <a href="report/02.html" class="report-card">
+            <img src="images/202603.png" alt="第1回 AI活用事例シェア交流会" class="report-card-img" />
+            <div class="report-card-body">
+              <span class="report-card-tag">勉強会</span>
+              <div class="report-card-date">2026年3月12日</div>
+              <div class="report-card-title">定期勉強会Vol.17</div>
+              <p class="report-card-desc">今回は知らないと100倍差がつくかもしれない？経営を爆速で加速させるAI活用をテーマに
+
+          マーケターであり、男性向けの眉毛サロン経営のJUNさんにリアルなAI活用術を共有いただきました。</p>
+            </div>
+          </a>
+          <a href="report/03.html" class="report-card">
+            <img src="images/202602.png" alt="キックオフイベント" class="report-card-img" />
+            <div class="report-card-body">
+              <span class="report-card-tag">勉強会</span>
+              <div class="report-card-date">2026年2月12日</div>
+              <div class="report-card-title">定期勉強会Vol.16</div>
+              <p class="report-card-desc">2026年最初のAIやろうぜ！は「今どんなAI使ってる？」
+
+                業務効率・動画生成・ジャーンリングなどメンバーによる最新のAI活用法をご紹介しました。</p>
+            </div>
+          </a>
+        </div>
+        <div class="reports-more">
+          <a href="report/" class="btn btn-outline">活動報告をもっと見る</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta" id="join">
+      <h2>AIの波に、一緒に乗ろう。</h2>
+      <p>参加は無料です。Discordコミュニティに参加して、次回のイベント情報をいち早くゲットしましょう。</p>
+      <a href="https://page.theapps.jp/advance/discord/U8hv3G40M25l34i8" target="_blank" rel="noopener" class="btn btn-discord btn-lg">
+        <svg width="20" height="15" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.245 1.175A14.836 14.836 0 0 0 11.602 0c-.163.294-.353.69-.484.004a10.36 10.36 0 0 0-2.637 0 9.994 9.994 0 0 0-.484-.004A14.84 14.84 0 0 0 4.355 1.175C1.28 5.856.42 10.422.85 14.93c1.71 1.27 3.367 2.04 4.997 2.547a11.7 11.7 0 0 0 1.014-1.666 9.727 9.727 0 0 1-1.597-.775c.134-.098.265-.2.391-.305 3.082 1.434 6.432 1.434 9.48 0 .128.106.259.207.391.305a9.748 9.748 0 0 1-1.599.776 11.66 11.66 0 0 0 1.014 1.665c1.632-.507 3.29-1.277 5-2.547.497-5.207-.845-9.73-3.696-13.755ZM6.25 12.218c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347.002 1.292-.917 2.346-2.077 2.346Zm5.5 0c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347 0 1.292-.917 2.346-2.077 2.346Z" fill="currentColor"/></svg>
+        Discordで無料参加 →
+      </a>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">AIやろうぜ！in FUKUOKA</div>
+    <p class="footer-text">© 2026 AIやろうぜ！in FUKUOKA. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

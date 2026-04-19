@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>キックオフイベントレポート | AIやろうぜ！in FUKUOKA</title>
+  <link rel="icon" type="image/png" href="../images/character2.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --yellow: #FFD000;
+      --yellow-light: #FFF8D6;
+      --yellow-dark: #E6B800;
+      --dark: #1A1A2E;
+      --gray: #6B7280;
+      --gray-light: #F9FAFB;
+      --white: #FFFFFF;
+      --radius: 16px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--white); color: var(--dark); line-height: 1.6; }
+    header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid #F0F0F0; }
+    .header-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 20px; font-weight: 900; color: var(--dark); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .logo-badge { background: var(--yellow); color: var(--dark); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 99px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 24px; border-radius: 99px; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-discord { background: #5865F2; color: var(--white); }
+    .btn-discord:hover { background: #4752C4; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(88,101,242,0.4); }
+    .breadcrumb { max-width: 800px; margin: 0 auto; padding: 20px 24px 0; display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--gray); }
+    .breadcrumb a { color: var(--gray); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--dark); }
+    .breadcrumb-sep { opacity: 0.4; }
+    article { max-width: 800px; margin: 0 auto; padding: 32px 24px 80px; }
+    .article-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .article-tag { display: inline-block; background: var(--yellow-light); color: var(--dark); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+    .article-date { font-size: 13px; color: var(--gray); }
+    .article-title { font-size: clamp(24px, 4vw, 36px); font-weight: 900; line-height: 1.3; letter-spacing: -0.02em; margin-bottom: 32px; }
+    .article-hero { width: 100%; border-radius: var(--radius); margin-bottom: 40px; display: block; }
+    .article-body { font-size: 16px; line-height: 1.9; }
+    .article-body h2 { font-size: 22px; font-weight: 700; margin: 48px 0 16px; padding-left: 16px; border-left: 4px solid var(--yellow); }
+    .article-body h3 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; }
+    .article-body p { margin-bottom: 20px; }
+    .article-body ul, .article-body ol { padding-left: 24px; margin-bottom: 20px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body blockquote { background: var(--yellow-light); border-left: 4px solid var(--yellow); border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 24px 0; font-style: italic; }
+    .info-box { background: var(--gray-light); border-radius: var(--radius); padding: 24px 28px; margin: 32px 0; }
+    .info-box-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; }
+    .info-box-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; }
+    .info-box-label { color: var(--gray); font-weight: 500; }
+    .article-divider { border: none; border-top: 1px solid #EFEFEF; margin: 48px 0; }
+    .article-cta { background: var(--dark); border-radius: var(--radius); padding: 40px; text-align: center; margin-top: 48px; }
+    .article-cta h3 { font-size: 22px; font-weight: 900; color: var(--white); margin-bottom: 10px; }
+    .article-cta p { color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 24px; }
+    .back-nav { max-width: 800px; margin: 0 auto; padding: 0 24px 40px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--gray); text-decoration: none; transition: color 0.2s; }
+    .back-link:hover { color: var(--dark); }
+    footer { background: var(--white); border-top: 1px solid #F0F0F0; padding: 40px 24px; text-align: center; }
+    .footer-logo { font-size: 18px; font-weight: 900; margin-bottom: 12px; }
+    .footer-text { font-size: 13px; color: var(--gray); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        AIやろうぜ！
+        <span class="logo-badge">in FUKUOKA</span>
+      </a>
+      <a href="https://page.theapps.jp/advance/discord/U8hv3G40M25l34i8" target="_blank" rel="noopener" class="btn btn-discord">
+        <svg width="16" height="13" viewBox="0 0 18 14" fill="none"><path d="M15.245 1.175A14.836 14.836 0 0 0 11.602 0c-.163.294-.353.69-.484.004a10.36 10.36 0 0 0-2.637 0 9.994 9.994 0 0 0-.484-.004A14.84 14.84 0 0 0 4.355 1.175C1.28 5.856.42 10.422.85 14.93c1.71 1.27 3.367 2.04 4.997 2.547a11.7 11.7 0 0 0 1.014-1.666 9.727 9.727 0 0 1-1.597-.775c.134-.098.265-.2.391-.305 3.082 1.434 6.432 1.434 9.48 0 .128.106.259.207.391.305a9.748 9.748 0 0 1-1.599.776 11.66 11.66 0 0 0 1.014 1.665c1.632-.507 3.29-1.277 5-2.547.497-5.207-.845-9.73-3.696-13.755ZM6.25 12.218c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347.002 1.292-.917 2.346-2.077 2.346Zm5.5 0c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347 0 1.292-.917 2.346-2.077 2.346Z" fill="currentColor"/></svg>
+        Discordで参加
+      </a>
+    </div>
+  </header>
+
+  <nav class="breadcrumb">
+    <a href="../index.html">TOP</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="../index.html#reports">活動報告</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>キックオフイベントレポート</span>
+  </nav>
+
+  <article>
+    <div class="article-meta">
+      <span class="article-tag">キックオフ</span>
+      <span class="article-date">2026年1月18日</span>
+    </div>
+
+    <h1 class="article-title">AIやろうぜ！in FUKUOKA キックオフイベントレポート</h1>
+
+    <img src="../images/202602.png" alt="キックオフイベントの様子" class="article-hero" />
+
+    <div class="info-box">
+      <div class="info-box-title">イベント概要</div>
+      <div class="info-box-grid">
+        <span class="info-box-label">日時</span><span>2026年1月18日（日）13:00〜16:00</span>
+        <span class="info-box-label">場所</span><span>福岡市内 市民交流施設</span>
+        <span class="info-box-label">参加者数</span><span>43名</span>
+        <span class="info-box-label">テーマ</span><span>コミュニティ発足・自己紹介・AI体験会</span>
+      </div>
+    </div>
+
+    <div class="article-body">
+
+      <h2>はじめに</h2>
+      <p>
+        2026年1月18日、「AIやろうぜ！in FUKUOKA」がついに始動しました。
+        告知からわずか2週間で43名もの方にお申し込みいただき、
+        福岡市民のAIへの関心の高さを改めて実感したキックオフとなりました。
+      </p>
+
+      <h2>当日の様子</h2>
+      <p>
+        会場には学生・社会人・フリーランス・主婦の方まで、さまざまなバックグラウンドの方が集まりました。
+        まずはコミュニティの趣旨説明からスタートし、参加者全員による自己紹介タイムへ。
+      </p>
+
+      <blockquote>
+        「こんなにたくさんの人がAIに興味を持っているとは思わなかった。福岡ってすごい！」（参加者の声）
+      </blockquote>
+
+      <h3>プログラム内容</h3>
+      <ul>
+        <li>コミュニティ趣旨説明・活動方針の共有</li>
+        <li>参加者全員の自己紹介タイム</li>
+        <li>生成AI体験デモ（ChatGPT・Claude・画像生成AI）</li>
+        <li>グループトーク「あなたが気になるAI活用シーン」</li>
+        <li>今後のイベントアイデア出し・投票</li>
+        <li>懇親会・名刺交換</li>
+      </ul>
+
+      <h2>コミュニティの方向性</h2>
+      <p>
+        参加者の皆さんとのディスカッションを経て、今後の活動方針として以下が決まりました。
+      </p>
+      <ul>
+        <li>毎月1回以上のイベント開催（勉強会・交流会を交互に）</li>
+        <li>初心者でも参加しやすいハンズオン形式を重視</li>
+        <li>Discordを日常のコミュニティ拠点として活用</li>
+        <li>福岡市内の公共施設を中心に、無料または低コストで開催</li>
+      </ul>
+
+      <h2>おわりに</h2>
+      <p>
+        「AIって難しそう」という不安を持って来た方が「これなら使えそう！」と帰っていく姿が印象的でした。
+        これからも気軽に学べる場を作り続けていきます。
+        次回のイベントもぜひご参加ください！
+      </p>
+
+    </div>
+
+    <hr class="article-divider" />
+
+    <div class="article-cta">
+      <h3>次のイベントに参加しませんか？</h3>
+      <p>Discordコミュニティに参加すると最新情報をいち早くお届けします。</p>
+      <a href="https://page.theapps.jp/advance/discord/U8hv3G40M25l34i8" target="_blank" rel="noopener" class="btn btn-discord">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M15.245 1.175A14.836 14.836 0 0 0 11.602 0c-.163.294-.353.69-.484.004a10.36 10.36 0 0 0-2.637 0 9.994 9.994 0 0 0-.484-.004A14.84 14.84 0 0 0 4.355 1.175C1.28 5.856.42 10.422.85 14.93c1.71 1.27 3.367 2.04 4.997 2.547a11.7 11.7 0 0 0 1.014-1.666 9.727 9.727 0 0 1-1.597-.775c.134-.098.265-.2.391-.305 3.082 1.434 6.432 1.434 9.48 0 .128.106.259.207.391.305a9.748 9.748 0 0 1-1.599.776 11.66 11.66 0 0 0 1.014 1.665c1.632-.507 3.29-1.277 5-2.547.497-5.207-.845-9.73-3.696-13.755ZM6.25 12.218c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347.002 1.292-.917 2.346-2.077 2.346Zm5.5 0c-1.14 0-2.077-1.054-2.077-2.346 0-1.292.916-2.347 2.077-2.347 1.16 0 2.097 1.055 2.077 2.347 0 1.292-.917 2.346-2.077 2.346Z" fill="currentColor"/></svg>
+        Discordで無料参加 →
+      </a>
+    </div>
+  </article>
+
+  <div class="back-nav">
+    <a href="../index.html#reports" class="back-link">← 活動報告一覧に戻る</a>
+  </div>
+
+  <footer>
+    <div class="footer-logo">AIやろうぜ！in FUKUOKA</div>
+    <p class="footer-text">© 2026 AIやろうぜ！in FUKUOKA. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
