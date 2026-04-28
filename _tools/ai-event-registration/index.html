@@ -478,6 +478,74 @@
       font-size: 0.9rem;
     }
 
+    /* プライバシーポリシー同意チェックボックス */
+    .field-check {
+      margin-top: 22px;
+      padding: 16px 18px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 2px solid var(--stroke);
+      border-radius: 14px;
+    }
+
+    .field-check label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--navy);
+      cursor: pointer;
+    }
+
+    .field-check input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      border: 2px solid var(--navy-mid);
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      position: relative;
+    }
+
+    .field-check input[type="checkbox"]:checked {
+      background: var(--navy-mid);
+      border-color: var(--navy-mid);
+    }
+
+    .field-check input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 5px;
+      width: 6px;
+      height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .field-check input[type="checkbox"]:focus-visible {
+      outline: 2px solid var(--navy-mid);
+      outline-offset: 2px;
+    }
+
+    .field-check a {
+      color: var(--navy-mid);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      font-weight: 700;
+    }
+
+    .field-check a:hover {
+      color: var(--navy);
+    }
+
     .back-btn {
       margin-top: 24px;
       background: #fff;
@@ -587,6 +655,12 @@
           <label for="message">メッセージ<span class="req" aria-hidden="true">必須</span></label>
           <textarea id="message" name="message" required maxlength="2000" placeholder="ご質問・ご要望・当日伝えたいことなど"></textarea>
         </div>
+        <div class="field-check">
+          <label>
+            <input type="checkbox" id="privacyAgree" name="privacyAgree">
+            <span><a href="privacy.html" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>を確認し、個人情報の取り扱いに同意します。<span class="req" aria-hidden="true">必須</span></span>
+          </label>
+        </div>
         <div id="formError" class="err" role="alert"></div>
         <div class="actions">
           <button type="submit" id="submitBtn">内容を送信してPayPayへ</button>
@@ -662,6 +736,7 @@
         const occupation = document.getElementById("occupation").value;
         const aiUsage = document.getElementById("aiUsage").value.trim();
         const message = document.getElementById("message").value.trim();
+        const privacyAgree = document.getElementById("privacyAgree").checked;
 
         if (!fullName) return "お名前を入力してください。";
         if (!email) return "メールアドレスを入力してください。";
@@ -669,6 +744,7 @@
         if (!occupation) return "職業を選択してください。";
         if (!aiUsage) return "「AI活用について」を入力してください。";
         if (!message) return "メッセージを入力してください。";
+        if (!privacyAgree) return "プライバシーポリシーへの同意をチェックしてください。";
         return null;
       }
 
@@ -747,6 +823,7 @@
         formSection.classList.remove("is-hidden");
         submitBtn.disabled = false;
         form.reset();
+        document.getElementById("privacyAgree").checked = false;
         clearError();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
