@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-YRooze-in-FUKUOKA — お申し込み</title>
+  <link rel="icon" type="image/png" href="mascot.png">
+  <link rel="apple-touch-icon" href="mascot.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #ffd41a;
+      --yellow-deep: #f5bc00;
+      --yellow-soft: #fff3b8;
+      --navy: #14324a;
+      --navy-mid: #1e4a6e;
+      --cream: #fffef6;
+      --cream-dark: #f5f0e6;
+      --text: #14324a;
+      --muted: #4a6278;
+      --stroke: rgba(20, 50, 74, 0.14);
+      --accent-ring: rgba(30, 74, 110, 0.25);
+      --ok: #0d9488;
+      --ok-bg: rgba(13, 148, 136, 0.12);
+      --radius: 22px;
+      --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 52%),
+        linear-gradient(165deg, var(--yellow-soft) 0%, var(--yellow) 38%, var(--yellow-deep) 100%);
+      line-height: 1.65;
+    }
+
+    .bg-dots {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      opacity: 0.07;
+      background-image: radial-gradient(var(--navy) 1px, transparent 1px);
+      background-size: 14px 14px;
+      z-index: 0;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: clamp(24px, 5vw, 40px) 20px 64px;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: clamp(18px, 3vw, 24px);
+      margin-bottom: 28px;
+    }
+
+    .hero-banner {
+      margin: 0;
+      padding: 0;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 14px 40px rgba(20, 50, 74, 0.14);
+      border: 2px solid rgba(20, 50, 74, 0.08);
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    .hero-banner img {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: top;
+    }
+
+    .hero-text {
+      min-width: 0;
+    }
+
+    .event-details {
+      background: var(--cream);
+      border: 2px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: clamp(18px, 3vw, 26px) clamp(18px, 3vw, 24px);
+      box-shadow: 0 12px 32px rgba(20, 50, 74, 0.08);
+      font-size: 0.92rem;
+      line-height: 1.75;
+      color: var(--text);
+    }
+
+    .event-details p {
+      margin: 0 0 12px;
+    }
+
+    .event-details p:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      font-weight: 700;
+      color: var(--navy);
+      margin-right: 2px;
+    }
+
+    .fee-discounts {
+      margin: 6px 0 12px;
+      padding: 0 0 0 1.5em;
+      list-style: disc;
+      color: var(--text);
+    }
+
+    .fee-discounts li {
+      margin-bottom: 4px;
+    }
+
+    .fee-discounts li:last-child {
+      margin-bottom: 0;
+    }
+
+    .event-notes {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--stroke);
+      font-size: 0.84rem;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .event-notes p {
+      margin: 0 0 10px;
+    }
+
+    .event-notes p:last-child {
+      margin-bottom: 0;
+    }
+
+    .event-notes a {
+      color: var(--navy-mid);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .event-notes a:hover {
+      color: var(--navy);
+    }
+
+    .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--navy-mid);
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-family: var(--font-body);
+      font-size: clamp(1.5rem, 4.2vw, 2rem);
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0 0 10px;
+      letter-spacing: 0.04em;
+      color: var(--navy);
+    }
+
+    h1 .title-line {
+      display: block;
+      font-size: 0.92em;
+      letter-spacing: 0.12em;
+      margin-top: 4px;
+    }
+
+    .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .card {
+      background: var(--cream);
+      border: 2px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: clamp(22px, 4vw, 34px);
+      box-shadow:
+        0 20px 48px rgba(20, 50, 74, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field:last-of-type {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--navy);
+    }
+
+    .req {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 7px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #fff;
+      background: var(--navy-mid);
+      border-radius: 4px;
+      vertical-align: middle;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      border: 2px solid var(--stroke);
+      border-radius: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--navy-mid);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .hint {
+      margin: 6px 0 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .actions {
+      margin-top: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button[type="submit"] {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(180deg, var(--navy-mid) 0%, var(--navy) 100%);
+      box-shadow: 0 10px 28px rgba(20, 50, 74, 0.28);
+      transition: transform 0.15s, box-shadow 0.2s;
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 36px rgba(20, 50, 74, 0.35);
+    }
+
+    button[type="submit"]:active {
+      transform: translateY(0);
+    }
+
+    button[type="submit"]:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .err {
+      display: none;
+      margin-top: 14px;
+      padding: 10px 14px;
+      font-size: 0.875rem;
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+    }
+
+    .err.is-visible {
+      display: block;
+    }
+
+    /* 送信後: フォーム非表示・PayPay表示 */
+    #formSection.is-hidden {
+      display: none;
+    }
+
+    #paypaySection {
+      display: none;
+    }
+
+    #paypaySection.is-visible {
+      display: block;
+      animation: rise 0.55s ease-out;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .success-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      margin-bottom: 22px;
+      border-radius: 14px;
+      background: var(--ok-bg);
+      border: 2px solid rgba(13, 148, 136, 0.28);
+    }
+
+    .success-banner strong {
+      color: var(--ok);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .success-banner p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 16px 8px;
+    }
+
+    .qr-frame {
+      padding: 12px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(20, 50, 74, 0.12);
+      /* ぼかし・変形を避け、QRのモジュールがにじまないようにする */
+      transform: none;
+      filter: none;
+    }
+
+    .qr-frame img {
+      display: block;
+      width: min(400px, 100%);
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      /* 縮小時もドットが潰れにくい（ブラウザにより効果は異なる） */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    .qr-tools {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qr-tools a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .qr-tools a:focus {
+      outline: 2px solid var(--navy-mid);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .qr-trouble {
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px dashed var(--stroke);
+      border-radius: 12px;
+      max-width: 100%;
+    }
+
+    .qr-trouble strong {
+      color: var(--navy);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+
+    .paypay-note {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 38ch;
+    }
+
+    .paypay-note strong {
+      color: var(--navy);
+    }
+
+    .paypay-logo {
+      margin-top: 8px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      color: var(--navy);
+    }
+
+    .paypay-logo .pp-orange {
+      color: #ff6b00;
+    }
+
+    .section-title {
+      font-family: var(--font-body);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: var(--navy);
+    }
+
+    .section-lede {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .back-btn {
+      margin-top: 24px;
+      background: #fff;
+      border: 2px solid var(--stroke);
+      color: var(--navy-mid);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--cream-dark);
+      border-color: rgba(20, 50, 74, 0.22);
+      color: var(--navy);
+    }
+
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(20, 50, 74, 0.55);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-dots" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="hero">
+      <figure class="hero-banner">
+        <img
+          src="event-hero.png"
+          alt="AI交流会 いけともさんが来る AIやろうぜ in FUKUOKA 5月27日水曜20時から22時 天神某所 参加費5000円"
+          loading="eager"
+          decoding="async"
+        >
+      </figure>
+
+      <div class="event-details">
+        <p>
+          <span class="detail-label">概要</span>：AIインフルエンサー＆経営者のいけともさんを迎えて福岡のAI好きが集まるAI交流会！
+        </p>
+        <p>
+          <span class="detail-label">日時</span>：2026年5月27日(水)20:00-22:00
+        </p>
+        <p>
+          <span class="detail-label">会場</span>：天神某所（確定次第告知します）
+        </p>
+        <p>
+          <span class="detail-label">参加費</span>：5000円（paypay払い・当日現金可）
+        </p>
+        <ul class="fee-discounts">
+          <li>paypay早割4500円（5/10まで）</li>
+        </ul>
+        <div class="event-notes">
+          <p>
+            ※50人前後のご参加を見込んでおりますが会場次第で申し込みを締め切る可能性もございますのでお早めにお申し込みください。
+          </p>
+          <p>
+            ※決済後、当日ご参加できなかった場合でも返金対応はできません。
+          </p>
+          <p>
+            ※領収書の発行は対応できません（<a href="https://biz.moneyforward.com/invoice/basic/54107/#i-2" target="_blank" rel="noopener noreferrer">領収書発行できない場合も支払い証明があれば経費対象にすることができます</a>）
+          </p>
+        </div>
+      </div>
+
+      <div class="hero-text">
+        <p class="eyebrow">Fukuoka · AI Event</p>
+        <h1>AI-YRooze-in-FUKUOKA<span class="title-line">お申し込みフォーム</span></h1>
+        <p class="lede">必要事項をご入力のうえ、お申し込みください。送信後、参加費のお支払い（PayPay）へ進みます。</p>
+      </div>
+    </header>
+
+    <section id="formSection" class="card" aria-labelledby="formHeading">
+      <h2 id="formHeading" class="visually-hidden" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">申し込みフォーム</h2>
+      <form id="eventForm" novalidate>
+        <div class="field">
+          <label for="fullName">お名前<span class="req" aria-hidden="true">必須</span></label>
+          <input type="text" id="fullName" name="fullName" autocomplete="name" required maxlength="120" placeholder="山田 太郎">
+        </div>
+        <div class="field">
+          <label for="email">メールアドレス<span class="req" aria-hidden="true">必須</span></label>
+          <input type="email" id="email" name="email" autocomplete="email" required maxlength="254" placeholder="example@email.com">
+        </div>
+        <div class="field">
+          <label for="occupation">職業<span class="req" aria-hidden="true">必須</span></label>
+          <select id="occupation" name="occupation" required>
+            <option value="">選択してください</option>
+            <option value="company">会社員</option>
+            <option value="entrepreneur">経営者・起業家</option>
+            <option value="freelance">フリーランス</option>
+            <option value="student">学生</option>
+            <option value="public">公務員</option>
+            <option value="other">その他</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="aiUsage">AI活用について<span class="req" aria-hidden="true">必須</span></label>
+          <textarea id="aiUsage" name="aiUsage" required maxlength="2000" placeholder="業務・学習での活用状況、関心のあるツールや用途など"></textarea>
+          <p class="hint">2000文字以内</p>
+        </div>
+        <div class="field">
+          <label for="message">メッセージ<span class="req" aria-hidden="true">必須</span></label>
+          <textarea id="message" name="message" required maxlength="2000" placeholder="ご質問・ご要望・当日伝えたいことなど"></textarea>
+        </div>
+        <div id="formError" class="err" role="alert"></div>
+        <div class="actions">
+          <button type="submit" id="submitBtn">内容を送信してPayPayへ</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="paypaySection" class="card" aria-labelledby="paypayHeading" hidden>
+      <div class="success-banner">
+        <div>
+          <strong>お申し込み内容を受け付けました</strong>
+          <p>下記のQRコードをPayPayアプリで読み取り、参加費をお支払いください。</p>
+        </div>
+      </div>
+      <h2 id="paypayHeading" class="section-title">PayPayでお支払い</h2>
+      <p class="section-lede">PayPayアプリの<strong>「スキャン」</strong>を開き、画面に表示されたQRを読み取ってください。うまくいかない場合は<strong>「QRを原寸の画像で開く」</strong>を試してください。</p>
+      <div class="qr-wrap">
+        <div class="qr-frame">
+          <img
+            id="paypayQr"
+            src="paypay-qr.png"
+            alt="AI-YRooze-in-FUKUOKA PayPay送金用QRコード"
+            loading="eager"
+            decoding="async"
+          >
+        </div>
+        <div class="qr-tools">
+          <a id="paypayQrOpen" href="paypay-qr.png" target="_blank" rel="noopener noreferrer">QRを原寸の画像で開く（読み取り推奨）</a>
+        </div>
+        <p class="paypay-logo"><span class="pp-orange">PayPay</span> · AI-YRooze-in-FUKUOKA</p>
+        <p class="paypay-note">QRコードの有効期限は <strong>2026年5月7日 15:40</strong> までです。期限が近づいたら画像を差し替えてください。</p>
+        <div class="qr-trouble">
+          <strong>「支払いに使えない」と表示される場合</strong>
+          ・ブラウザの<strong>表示倍率を100%</strong>にしてから再度スキャンする<br>
+          ・上の「原寸で開いた」画面をスキャンする（Webページ上の縮小表示だと読み取れないことがあります）<br>
+          ・PayPayアプリで<strong>送金・支払い用のQR</strong>として発行した画像か確認する（種類が違うとエラーになります）<br>
+          ・有効期限切れの場合は、PayPay側で新しいQRを発行し <code style="font-size:0.85em;">paypay-qr.png</code> を差し替えて再デプロイしてください
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <button type="button" class="back-btn" id="resetFlow">フォームに戻る</button>
+      </div>
+    </section>
+
+    <footer>
+      お申し込み内容は Google スプレッドシートに保存されます（GAS 連携・Vercel の環境変数設定が必要です）。
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById("eventForm");
+      const formSection = document.getElementById("formSection");
+      const paypaySection = document.getElementById("paypaySection");
+      const formError = document.getElementById("formError");
+      const submitBtn = document.getElementById("submitBtn");
+      const resetFlow = document.getElementById("resetFlow");
+      const paypayQr = document.getElementById("paypayQr");
+
+      function showError(message) {
+        formError.textContent = message;
+        formError.classList.add("is-visible");
+      }
+
+      function clearError() {
+        formError.textContent = "";
+        formError.classList.remove("is-visible");
+      }
+
+      function validate() {
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const occupation = document.getElementById("occupation").value;
+        const aiUsage = document.getElementById("aiUsage").value.trim();
+        const message = document.getElementById("message").value.trim();
+
+        if (!fullName) return "お名前を入力してください。";
+        if (!email) return "メールアドレスを入力してください。";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "メールアドレスの形式をご確認ください。";
+        if (!occupation) return "職業を選択してください。";
+        if (!aiUsage) return "「AI活用について」を入力してください。";
+        if (!message) return "メッセージを入力してください。";
+        return null;
+      }
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearError();
+        const err = validate();
+        if (err) {
+          showError(err);
+          return;
+        }
+
+        const payload = {
+          fullName: document.getElementById("fullName").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          occupation: document.getElementById("occupation").value,
+          aiUsage: document.getElementById("aiUsage").value.trim(),
+          message: document.getElementById("message").value.trim(),
+          submittedAt: new Date().toISOString()
+        };
+
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "送信中...";
+
+        var isLocal = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+
+        try {
+          if (!isLocal) {
+            var res = await fetch("/api/submit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            var data = await res.json().catch(function () {
+              return {};
+            });
+            if (!res.ok || !data.ok) {
+              throw new Error(
+                (data && data.error) ||
+                  "申込の保存に失敗しました。時間をおいて再度お試しください。"
+              );
+            }
+          } else {
+            console.warn(
+              "[開発モード] スプレッドシートへは送信していません。本番URLまたは vercel dev で /api/submit を確認してください。",
+              payload
+            );
+          }
+        } catch (submitErr) {
+          showError(
+            submitErr.message ||
+              "送信に失敗しました。ネットワークや設定をご確認ください。"
+          );
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          return;
+        }
+
+        submitBtn.textContent = originalBtnText;
+        console.log("[AIイベント申し込み] 送信完了", payload);
+
+        formSection.classList.add("is-hidden");
+        paypaySection.hidden = false;
+        paypaySection.classList.add("is-visible");
+        paypaySection.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        paypayQr.addEventListener("error", function onErr() {
+          paypayQr.alt = "QR画像を読み込めませんでした。画像ファイルのパスを確認してください。";
+        }, { once: true });
+      });
+
+      resetFlow.addEventListener("click", function () {
+        paypaySection.classList.remove("is-visible");
+        paypaySection.hidden = true;
+        formSection.classList.remove("is-hidden");
+        submitBtn.disabled = false;
+        form.reset();
+        clearError();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    })();
+  </script>
+</body>
+</html>

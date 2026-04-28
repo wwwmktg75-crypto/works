@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-YRooze-in-FUKUOKA — PayPayお支払い</title>
+  <link rel="icon" type="image/png" href="mascot.png">
+  <link rel="apple-touch-icon" href="mascot.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #ffd41a;
+      --yellow-deep: #f5bc00;
+      --yellow-soft: #fff3b8;
+      --navy: #14324a;
+      --navy-mid: #1e4a6e;
+      --cream: #fffef6;
+      --text: #14324a;
+      --muted: #4a6278;
+      --stroke: rgba(20, 50, 74, 0.14);
+      --radius: 22px;
+      --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 52%),
+        linear-gradient(165deg, var(--yellow-soft) 0%, var(--yellow) 38%, var(--yellow-deep) 100%);
+      line-height: 1.65;
+    }
+
+    .bg-dots {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      opacity: 0.07;
+      background-image: radial-gradient(var(--navy) 1px, transparent 1px);
+      background-size: 14px 14px;
+      z-index: 0;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: clamp(24px, 5vw, 40px) 20px 64px;
+    }
+
+    .card {
+      background: var(--cream);
+      border: 2px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: clamp(22px, 4vw, 34px);
+      box-shadow:
+        0 20px 48px rgba(20, 50, 74, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--navy-mid);
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-family: var(--font-body);
+      font-size: clamp(1.35rem, 3.8vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.35;
+      margin: 0 0 10px;
+      letter-spacing: 0.04em;
+      color: var(--navy);
+    }
+
+    .lede {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .section-title {
+      font-family: var(--font-body);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: var(--navy);
+    }
+
+    .section-lede {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 16px 8px;
+    }
+
+    .qr-frame {
+      padding: 12px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(20, 50, 74, 0.12);
+      transform: none;
+      filter: none;
+    }
+
+    .qr-frame img {
+      display: block;
+      width: min(400px, 100%);
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    .qr-tools {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qr-tools a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .qr-tools a:focus {
+      outline: 2px solid var(--navy-mid);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .qr-trouble {
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px dashed var(--stroke);
+      border-radius: 12px;
+      max-width: 100%;
+    }
+
+    .qr-trouble strong {
+      color: var(--navy);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+
+    .paypay-note {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 38ch;
+    }
+
+    .paypay-note strong {
+      color: var(--navy);
+    }
+
+    .paypay-logo {
+      margin-top: 8px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      color: var(--navy);
+    }
+
+    .paypay-logo .pp-orange {
+      color: #ff6b00;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--navy-mid);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .back-link:hover {
+      color: var(--navy);
+    }
+
+    footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(20, 50, 74, 0.55);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-dots" aria-hidden="true"></div>
+  <div class="shell">
+    <header>
+      <p class="eyebrow">Fukuoka · AI Event</p>
+      <h1>PayPayお支払い（送金用QR）</h1>
+      <p class="lede">本イベント参加費のお支払いにご利用ください。申し込みは<a href="/">トップのフォーム</a>からお願いします。</p>
+    </header>
+
+    <section class="card" aria-labelledby="paypayHeading">
+      <h2 id="paypayHeading" class="section-title">PayPayでお支払い</h2>
+      <p class="section-lede">PayPayアプリの<strong>「スキャン」</strong>を開き、画面に表示されたQRを読み取ってください。うまくいかない場合は<strong>「QRを原寸の画像で開く」</strong>を試してください。</p>
+      <div class="qr-wrap">
+        <div class="qr-frame">
+          <img
+            src="paypay-qr.png"
+            alt="AI-YRooze-in-FUKUOKA PayPay送金用QRコード"
+            width="400"
+            height="400"
+            loading="eager"
+            decoding="async"
+          >
+        </div>
+        <div class="qr-tools">
+          <a href="paypay-qr.png" target="_blank" rel="noopener noreferrer">QRを原寸の画像で開く（読み取り推奨）</a>
+        </div>
+        <p class="paypay-logo"><span class="pp-orange">PayPay</span> · AI-YRooze-in-FUKUOKA</p>
+        <p class="paypay-note">QRコードの有効期限は <strong>2026年5月7日 15:40</strong> までです。期限が近づいたら画像を差し替えてください。</p>
+        <div class="qr-trouble">
+          <strong>「支払いに使えない」と表示される場合</strong>
+          ・ブラウザの<strong>表示倍率を100%</strong>にしてから再度スキャンする<br>
+          ・上の「原寸で開いた」画面をスキャンする（Webページ上の縮小表示だと読み取れないことがあります）<br>
+          ・PayPayアプリで<strong>送金・支払い用のQR</strong>として発行した画像か確認する（種類が違うとエラーになります）<br>
+          ・有効期限切れの場合は、PayPay側で新しいQRを発行し <code style="font-size:0.85em;">paypay-qr.png</code> を差し替えて再デプロイしてください
+        </div>
+      </div>
+      <p style="text-align:center;margin:0;">
+        <a class="back-link" href="/">← お申し込みフォームに戻る</a>
+      </p>
+    </section>
+
+    <footer>
+      参加費：5000円（早割等は<a href="/">申込ページ</a>表記に準拠）
+    </footer>
+  </div>
+</body>
+</html>
